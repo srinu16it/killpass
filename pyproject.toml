@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "killpass"
+dynamic = ["version"]
+description = "AI that double-checks itself before it speaks: a skeptic harness that attacks LLM claims against source documents."
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [{name = "Srinivas Merugu"}]
+requires-python = ">=3.9"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.optional-dependencies]
+pdf = ["pypdf>=4"]
+
+[project.urls]
+Homepage = "https://github.com/srinu16it/killpass"
+Evidence = "https://github.com/srinu16it/arin-research-notes"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+killpass = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = {attr = "killpass._version.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

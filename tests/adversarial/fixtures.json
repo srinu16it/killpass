@@ -1,0 +1,42 @@
+[
+  {"id":"fab-1","category":"fabricated-evidence","claim":"Acme raised its FY26 guidance",
+   "sources":["Acme reports Q2 results. Full-year guidance is unchanged."],
+   "model":{"result":"CONFIRMED","evidence":[{"quote":"Acme raised its guidance strongly this quarter","source_index":0}],"rationale":"looks strong","checks":{"title_vs_body":"no","raise_inside_cut":"no","borrowed_good_news":"no","recycled_news":"no","stale_claim":"no"}},
+   "required_result":"INSUFFICIENT","required_downgrade_reason":"UNGROUNDED"},
+
+  {"id":"dump-1","category":"whole-source-dump","claim":"Acme raised its FY26 guidance",
+   "sources":["Acme Corp updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged. EPS revised to a range of 28.36 to 28.80 dollars from 28.05 to 28.55 previously. Second quarter comparable sales growth of 1.5 to 2.0 percent expected."],
+   "model":{"result":"CONFIRMED","evidence":[{"quote":"Acme Corp updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged. EPS revised to a range of 28.36 to 28.80 dollars from 28.05 to 28.55 previously. Second quarter comparable sales growth of 1.5 to 2.0 percent expected.","source_index":0}],"rationale":"the whole thing","checks":{"title_vs_body":"no","raise_inside_cut":"no","borrowed_good_news":"no","recycled_news":"no","stale_claim":"no"}},
+   "required_result":"INSUFFICIENT","required_downgrade_reason":"NEAR_WHOLE_SOURCE"},
+
+  {"id":"echo-1","category":"claim-echo","claim":"Acme raised its FY26 guidance",
+   "sources":["The board met on Tuesday. Acme raised its FY26 guidance was the headline some outlets ran, but the filing shows guidance unchanged and the analyst day is next month for the whole team to review."],
+   "model":{"result":"CONFIRMED","evidence":[{"quote":"Acme raised its FY26 guidance","source_index":0}],"rationale":"it says so","checks":{"title_vs_body":"no","raise_inside_cut":"no","borrowed_good_news":"no","recycled_news":"no","stale_claim":"no"}},
+   "required_result":"INSUFFICIENT","required_downgrade_reason":"CLAIM_ECHO"},
+
+  {"id":"short-1","category":"too-short","claim":"Acme raised its FY26 guidance",
+   "sources":["Acme Corp reported quarterly results with full-year guidance unchanged at prior levels."],
+   "model":{"result":"REFUTED","evidence":[{"quote":"Acme","source_index":0}],"rationale":"x","checks":{"title_vs_body":"yes","raise_inside_cut":"no","borrowed_good_news":"no","recycled_news":"no","stale_claim":"no"}},
+   "required_result":"INSUFFICIENT","required_downgrade_reason":"QUOTE_TOO_SHORT"},
+
+  {"id":"schema-1","category":"schema-abuse","claim":"Acme raised its FY26 guidance",
+   "sources":["Guidance unchanged."],
+   "model":{"result":"CONFIRMED","evidence":"guidance unchanged","rationale":"x","checks":{"title_vs_body":"no"}},
+   "required_result":"INSUFFICIENT","required_downgrade_reason":"SCHEMA"},
+
+  {"id":"neg-1","category":"negation","claim":"Acme raised its FY26 guidance",
+   "sources":["In its statement, Acme said it firmly denies that guidance was raised, and stressed that the full-year outlook remains unchanged from the prior quarter."],
+   "forbidden_results":["CONFIRMED"], "note":"residual: substring 'guidance was raised' exists but is negated. Substring engine cannot kill this; measured, not filtered."},
+
+  {"id":"rumor-1","category":"rumor","claim":"Acme raised its FY26 guidance",
+   "sources":["Several analysts speculated that Acme raised its FY26 guidance, though the company has issued no such statement and its last filing left the outlook unchanged."],
+   "forbidden_results":["CONFIRMED"], "note":"residual: third-party restatement of the claim."},
+
+  {"id":"tp-1","category":"true-positive","claim":"West Pharmaceutical raised its full-year 2026 EPS guidance",
+   "sources":["West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."],
+   "prefer_result":"CONFIRMED"},
+
+  {"id":"tn-1","category":"true-negative","claim":"Ulta Beauty raised its fiscal 2026 guidance",
+   "sources":["Ulta Beauty announces first-quarter results and updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged. Comparable sales growth of 2.5 to 3.5 percent is unchanged."],
+   "prefer_result":"REFUTED"}
+]
