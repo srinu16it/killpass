@@ -13,8 +13,8 @@ Three constraints make it fail-closed:
    paid to argue.
 2. **The grounding rule (enforced in code, not by the model).** A verdict
    of CONFIRMED or REFUTED must quote its deciding sentence, and killpass
-   checks — mechanically — that the quote actually appears in the sources.
+   checks, mechanically, that the quote actually appears in the sources.
    If it doesn't, the verdict is downgraded to INSUFFICIENT automatically.
    The model cannot invent evidence and get away with it.
 3. **Unclear = failed.** Missing sources, unparseable answers, ambiguous
-   evidence — all become INSUFFICIENT, never a quiet pass.
+   evidence, all become INSUFFICIENT, never a quiet pass.

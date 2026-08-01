@@ -6,7 +6,7 @@ For high-stakes claims, run two independent skeptics:
 from killpass import Skeptic, dual_attack
 
 out = dual_attack(Skeptic(llm=model_a), Skeptic(llm=model_b), claim, sources)
-out["result"]   # CONFIRMED / REFUTED / INSUFFICIENT — or ESCALATE
+out["result"]   # CONFIRMED / REFUTED / INSUFFICIENT / ESCALATE
 ```
 
 If the two skeptics disagree, the result is **ESCALATE**: a human should

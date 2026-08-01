@@ -6,7 +6,7 @@ Install (via `pip install killpass`):
 pip install killpass
 ```
 
-Use — three lines, any LLM:
+Use, three lines, any LLM:
 
 ```python
 from killpass import Skeptic
@@ -24,5 +24,5 @@ print(verdict.evidence)   # the exact quotes that decided it
 print(verdict.rationale)  # one plain-language paragraph
 ```
 
-That's the whole API. killpass is the harness, not the brain — you bring
+That's the whole API. killpass is the harness, not the brain, you bring
 the model, it brings the discipline.

@@ -2,7 +2,7 @@
 
 **AI that double-checks itself before it speaks.**
 
-killpass gives your AI a built-in skeptic — a second AI whose only job is to
+killpass gives your AI a built-in skeptic, a second AI whose only job is to
 try to prove the first one wrong, before the answer reaches a human. Like
 spell-check, but for AI claims.
 
@@ -13,4 +13,4 @@ spell-check, but for AI claims.
 - [[FAQ]] · [[Roadmap]]
 
 Everything here is written in plain language on purpose. If a page confuses
-you, that is a bug — open an issue.
+you, that is a bug, open an issue.
