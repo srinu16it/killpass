@@ -73,7 +73,7 @@ verdict = skeptic.attack(
 )
 
 print(verdict.result)             # CONFIRMED | REFUTED | INSUFFICIENT
-print(verdict.downgrade_reason)   # why, if INSUFFICIENT (10 reason codes)
+print(verdict.downgrade_reason)   # why, if INSUFFICIENT (documented codes, SCHEMA.md)
 for span in verdict.evidence:     # each: a verbatim quote + which source
     print(span.quote, "-> source", span.source_index)
 ```
@@ -104,7 +104,7 @@ Fetching stays separate from judging on purpose. `load()` runs before the skepti
 
 ## Status
 
-**v0.2.2, published and hardened.** `pip install killpass`. 22 tests plus an adversarial fixture pack in CI. Multiple rounds of adversarial review hardened the design. The verification patterns were extracted from a real research system.
+**v0.3.0, published and hardened.** `pip install killpass`. 52 tests plus an adversarial fixture pack in CI. The verdict contract is frozen at schema v2 ([SCHEMA.md](https://github.com/srinu16it/killpass/blob/main/SCHEMA.md)). Multiple rounds of adversarial review hardened the design, before and after each change. The verification patterns were extracted from a real research system.
 
 ## Limitations
 

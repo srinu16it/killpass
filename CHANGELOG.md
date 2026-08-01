@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.3.0 — 2026-08-01
+
+Correctness hardening (P0 kernel fixes, adversarially reviewed before and
+after implementation). **Schema bumps to v2** — see SCHEMA.md for the
+v1 -> v2 migration. Same `result` tri-state; new `downgrade_reason` codes.
+
+- **Every evidence quote must ground, not just one.** A decisive verdict that
+  pairs a real quote with a fabricated companion now fails instead of passing
+  on the survivor. Malformed evidence items fail as `SCHEMA` rather than being
+  silently dropped.
+- **`source_index` is validated, not rewritten.** A quote must be a verbatim
+  span of the source the model *cited*, not merely of some source. Grounded
+  elsewhere is not grounded as cited (`SOURCE_INDEX_MISMATCH`); a missing,
+  non-integer, or out-of-range index is `INVALID_SOURCE_INDEX`.
+- **Whole-response JSON parsing.** The response must be exactly one JSON object
+  (one optional markdown fence allowed). A decoy object or trailing model output
+  fails closed to `UNPARSEABLE` instead of being scanned for the first object.
+- **Operational failures are separated from content.** A model that raises or
+  returns an empty/non-text response reports `LLM_ERROR`, never a content
+  verdict, and never escapes `attack()` as an exception.
+- **Input and response bounds.** Oversize claim, source count, total source
+  length, model response, or evidence-item count are rejected with
+  `INPUT_TOO_LARGE` / `RESPONSE_TOO_LARGE`. Defaults are generous and set per
+  `Skeptic(...)`.
+
 ## 0.2.3 — 2026-08-01
 
 Security hardening (external review) + docs.

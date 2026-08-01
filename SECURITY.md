@@ -7,11 +7,13 @@ itself.
 
 ## The one guarantee
 
-killpass verifies that a decisive verdict's evidence is a **real, verbatim,
-non-trivial span of a single source you provided**. A CONFIRMED or REFUTED
-verdict cannot carry a quote the model invented, a whole-source dump, a
-mere echo of the claim, or a span stitched across two sources. If no quote
-survives, the verdict is downgraded to INSUFFICIENT with a reason code.
+killpass verifies that **every** quote on a decisive verdict is a **real,
+verbatim, non-trivial span of the source the model cited**. A CONFIRMED or
+REFUTED verdict cannot carry a quote the model invented, a whole-source dump,
+a mere echo of the claim, a span stitched across two sources, or a quote
+misattributed to a source that does not contain it. One fabricated companion
+quote fails the whole verdict, even beside a real one. If any quote fails, the
+verdict is downgraded to INSUFFICIENT with a reason code.
 
 ## What it does NOT guarantee (grounded ≠ supported)
 
@@ -51,6 +53,26 @@ document itself is false, the verdict faithfully cites the false document.
 killpass verifies claim-vs-source, not source-vs-reality. Every verdict
 quotes its span and names its `source_index` so the judgment is always
 auditable.
+
+## Fail-closed and robustness (v0.3)
+
+The harness is built to fail closed, never open:
+
+- **No decisive verdict without proof.** Every quote must ground against its
+  cited source, or the verdict is INSUFFICIENT.
+- **Operational failures are not verdicts.** A model that raises or returns an
+  empty or non-text response yields `LLM_ERROR`, never a content verdict, and
+  never escapes `attack()` as an exception.
+- **One JSON object only.** A decoy object or trailing model output fails to
+  `UNPARSEABLE` rather than being scanned for the first parseable object.
+- **Bounds reject oversize runs.** Claim, source count, total source length,
+  model response, and evidence-item count have generous hard caps
+  (`INPUT_TOO_LARGE` / `RESPONSE_TOO_LARGE`).
+- **Type misuse is loud.** A non-string claim or source raises `TypeError` at
+  the boundary rather than degrading silently (a `None` source is skipped and a
+  `None` claim becomes empty; those are data conditions, not misuse).
+
+The frozen verdict contract is [SCHEMA.md](SCHEMA.md) (schema v2).
 
 ## Reporting
 

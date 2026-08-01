@@ -2,7 +2,7 @@
   {"id":"fab-1","category":"fabricated-evidence","claim":"Acme raised its FY26 guidance",
    "sources":["Acme reports Q2 results. Full-year guidance is unchanged."],
    "model":{"result":"CONFIRMED","evidence":[{"quote":"Acme raised its guidance strongly this quarter","source_index":0}],"rationale":"looks strong","checks":{"title_vs_body":"no","raise_inside_cut":"no","borrowed_good_news":"no","recycled_news":"no","stale_claim":"no"}},
-   "required_result":"INSUFFICIENT","required_downgrade_reason":"UNGROUNDED"},
+   "required_result":"INSUFFICIENT","required_downgrade_reason":"SOURCE_INDEX_MISMATCH"},
 
   {"id":"dump-1","category":"whole-source-dump","claim":"Acme raised its FY26 guidance",
    "sources":["Acme Corp updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged. EPS revised to a range of 28.36 to 28.80 dollars from 28.05 to 28.55 previously. Second quarter comparable sales growth of 1.5 to 2.0 percent expected."],

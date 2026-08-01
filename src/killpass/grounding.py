@@ -60,10 +60,24 @@ Q_LONG = "QUOTE_TOO_LONG"
 Q_NEAR_WHOLE = "NEAR_WHOLE_SOURCE"
 Q_ECHO = "CLAIM_ECHO"
 Q_UNGROUNDED = "UNGROUNDED"
+# schema_version 2: the model's own source_index is validated, not rewritten.
+INVALID_SOURCE_INDEX = "INVALID_SOURCE_INDEX"   # missing, non-int, or out of range
+SOURCE_INDEX_MISMATCH = "SOURCE_INDEX_MISMATCH"  # in range, but the quote is not in that source
 
 
-def check_quote(quote: str, norm_sources: List[str], norm_claim: str) -> Tuple[Optional[int], Optional[str]]:
-    """Return (source_index, None) if the quote grounds, else (None, reason)."""
+def check_quote(quote: str, norm_sources: List[str], norm_claim: str,
+                source_index: object) -> Tuple[Optional[int], Optional[str]]:
+    """Return (source_index, None) if the quote grounds, else (None, reason).
+
+    The quote must be a verbatim span of the source the model DECLARED, not
+    merely of some source. Grounded-elsewhere is not grounded-as-cited: a
+    provenance claim the harness cannot confirm is a failure, not a save.
+    """
+    # bool is an int subclass in Python; a JSON `true` must not read as index 1.
+    if isinstance(source_index, bool) or not isinstance(source_index, int):
+        return None, INVALID_SOURCE_INDEX
+    if source_index < 0 or source_index >= len(norm_sources):
+        return None, INVALID_SOURCE_INDEX
     nq = normalize(quote)
     if len(nq) < QUOTE_MIN_CHARS:
         return None, Q_SHORT
@@ -71,13 +85,11 @@ def check_quote(quote: str, norm_sources: List[str], norm_claim: str) -> Tuple[O
         return None, Q_LONG
     if is_claim_echo(nq, norm_claim):
         return None, Q_ECHO
-    hit_but_near_whole = False
-    for i, ns in enumerate(norm_sources):
-        if nq in ns:
-            src_len = len(ns)
-            alpha = NEAR_WHOLE_SOURCE_ALPHA if src_len >= SOURCE_MIN_FOR_ALPHA else NEAR_WHOLE_SOURCE_ALPHA_SHORT
-            if len(nq) >= alpha * src_len:
-                hit_but_near_whole = True   # keep scanning: a later source may hold a proper span
-                continue
-            return i, None
-    return None, (Q_NEAR_WHOLE if hit_but_near_whole else Q_UNGROUNDED)
+    ns = norm_sources[source_index]
+    if nq not in ns:
+        return None, SOURCE_INDEX_MISMATCH
+    src_len = len(ns)
+    alpha = NEAR_WHOLE_SOURCE_ALPHA if src_len >= SOURCE_MIN_FOR_ALPHA else NEAR_WHOLE_SOURCE_ALPHA_SHORT
+    if len(nq) >= alpha * src_len:
+        return None, Q_NEAR_WHOLE
+    return source_index, None

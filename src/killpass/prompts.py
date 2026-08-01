@@ -30,6 +30,8 @@ Run these named traps and answer each yes/no/n-a:
 
 Rules:
 - A verdict of CONFIRMED or REFUTED must quote the exact deciding sentence(s) from the sources, verbatim.
+- source_index MUST be the number of the exact source the quote is copied from. A quote checked against the wrong source fails.
+- EVERY evidence item must be a real verbatim span of its cited source. One invented or misattributed quote fails the whole verdict, even beside a real one.
 - If you cannot quote deciding evidence, the verdict is INSUFFICIENT.
 - Never use outside knowledge. The sources are the world.
 
