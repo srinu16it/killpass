@@ -1,0 +1,16 @@
+category,n,failures
+ambiguous_offsets,500,0
+claim_echo,750,0
+cross_source_stitch,750,0
+decoy_json,500,0
+fabricated,1000,0
+input_response_bounds,500,0
+malformed_schema,1000,0
+multi_one_invalid,1000,0
+too_long,500,0
+too_short,500,0
+truncation,500,0
+unicode_valid,750,0
+valid_control,750,0
+whole_source_dump,500,0
+wrong_source_index,1000,0

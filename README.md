@@ -60,6 +60,27 @@ Any team whose AI answers questions from documents: legal tech, finance tools, m
 
 killpass checks that a verdict is grounded in a real, verbatim source span. It does not check that the claim is true. A quote can exist in a document yet be negated (*"we deny guidance was raised"*) or come from a third-party rumor. A substring engine cannot catch those, so killpass measures the residual instead of faking a filter. The benchmark has two halves: a 48-case mechanical pack (deterministic, canned model output, in CI) that pins every gate reason code, and a live residual harness (`bench/run.py`) you run on your own model that reports false-confirm counts per class (negation, rumor, sarcasm, hypothetical) as `k/n` with a Wilson interval. It reports counts, never an accuracy rate. Full model: [SECURITY.md](https://github.com/srinu16it/killpass/blob/main/SECURITY.md). Frozen contract: [SCHEMA.md](https://github.com/srinu16it/killpass/blob/main/SCHEMA.md).
 
+## Evaluation
+
+The hypothesis under test is narrow and measurable: *does killpass's gate block
+decisive outputs that carry fabricated, misattributed, malformed, or unverifiable
+evidence?* Whether that lowers what reaches real users is a separate question
+(Eval 2/3 below), not something the mechanical run establishes.
+
+**Mechanical contract (run):** on 10,500 systematically generated invalid-evidence
+fixtures across 15 attack categories, the **mechanical Unsupported Evidence
+Escape Rate (generated fixtures, canned output, no LLM) was 0 / 8,500** (rule-of-three
+95% upper bound ≈ 0.035%, on that generated distribution). Same run: 0 / 2,000
+valid-evidence false rejections, 0 uncaught exceptions. This validates the gate,
+not a model, and says nothing about real-model behaviour. `python evals/run_mechanical.py`.
+
+**Incremental value over a plain prompt** (does the gate beat "just ask the model
+to cite its source"?) and **end-to-end decision quality** (human-labeled) are
+designed with a runnable harness but **not yet run** — a credible result needs
+multiple models, labeled claims, and cost/latency measured alongside. The full
+method, the honest caveats, and the decision rule for when a performance claim is
+earned are in [evals/](https://github.com/srinu16it/killpass/blob/main/evals/README.md).
+
 ## For engineers (30 seconds)
 
 ```python
@@ -107,7 +128,7 @@ Fetching stays separate from judging on purpose. `load()` runs before the skepti
 
 ## Status
 
-**v1.2.0 — stable.** `pip install killpass`. 120 tests including a 48-case mechanical adversarial pack in CI. The public API and the verdict schema ([SCHEMA.md](https://github.com/srinu16it/killpass/blob/main/SCHEMA.md)) are stable: 1.x will not break them, and the schema grows only by additive, forward-compatible fields (now v4). That is a promise about the contract, not a claim of large-scale production use, killpass is still early in adoption. The one job is done and hardened across multiple rounds of adversarial review; the verification patterns were extracted from a real research system.
+**v1.2.1 — stable.** `pip install killpass`. 120 tests including a 48-case mechanical adversarial pack in CI. The public API and the verdict schema ([SCHEMA.md](https://github.com/srinu16it/killpass/blob/main/SCHEMA.md)) are stable: 1.x will not break them, and the schema grows only by additive, forward-compatible fields (now v4). That is a promise about the contract, not a claim of large-scale production use, killpass is still early in adoption. The one job is done and hardened across multiple rounds of adversarial review; the verification patterns were extracted from a real research system.
 
 killpass stops here on purpose. Support-judgment (does the span *mean* the claim), observability metrics, and CLI or framework adapters are deliberately **not** in the library: the first needs an NLI or second-LLM step killpass refuses, the second would re-encode the verdict, and the third belongs in community leaves under their own names. The [expansion doctrine](https://github.com/srinu16it/killpass/blob/main/ARCHITECTURE.md) is why.
 

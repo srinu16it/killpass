@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.1 — 2026-08-01
+
+Evaluation harness and docs. No library code change.
+
+- Adds `evals/`: a mechanical contract validation that runs ~10,500 generated
+  invalid-evidence fixtures (canned output, no LLM) through the gate and reports
+  the Unsupported Evidence Escape Rate. On seed 20260801: 0 escapes out of 8,500
+  invalid-evidence cases, 0/2,000 valid-evidence false rejections, 0 uncaught
+  exceptions. This validates the gate, not a model.
+- Adds a runnable (but NOT YET RUN as a study) incremental-value harness comparing
+  ordinary-prompt / refute-first-only / killpass arms under one shared referee,
+  and documents the end-to-end evaluation design and the decision rule for when a
+  performance claim is earned.
+- README gains an Evaluation section. `evals/` is not part of the installed package.
+
 ## 1.2.0 — 2026-08-01
 
 Additive provenance. **Schema bumps to v4** (one optional field; forward-compatible).
