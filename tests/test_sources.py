@@ -22,3 +22,12 @@ def test_txt_passthrough(tmp_path):
     p = tmp_path / "a.txt"
     p.write_text("plain words")
     assert load(str(p)) == "plain words"
+
+
+def test_from_url_blocks_ssrf():
+    import pytest
+    from killpass.sources import from_url
+    for bad in ["http://localhost/x", "http://127.0.0.1/x",
+                "http://169.254.169.254/latest/meta-data", "ftp://host/y"]:
+        with pytest.raises(ValueError):
+            from_url(bad)

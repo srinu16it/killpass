@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 — 2026-08-01
+
+Security hardening (external review) + docs.
+- The claim is now wrapped as untrusted data too (was interpolated raw): defense-in-depth against prompt injection carried in the claim.
+- `from_url` refuses private/loopback/link-local/unresolvable hosts, caps downloads at 10 MB, and does not follow redirects (SSRF/DoS mitigation). For broader fetching, use your own retrieval and pass the text in.
+- README rewritten in plain prose (no em-dashes); no code/API change from that part.
+
 ## 0.2.2, 2026-08-01
 
 - Remove a stale project-metadata link that pointed at a now-private repo

@@ -57,3 +57,18 @@ auditable.
 Found a way to make a decisive verdict carry a worthless quote? That's a
 bug in the one job, open an issue with a reproducing fixture
 (claim + sources + the model JSON). Real, dated cases preferred.
+
+
+## Untrusted inputs (claim and sources)
+
+Both the claim and the sources are wrapped in `<<<UNTRUSTED_...>>>` markers and
+the model is told to treat them as data, not instructions. This is
+defense-in-depth against prompt injection in either input, not immunity.
+
+## URL loading (`from_url`)
+
+`from_url` refuses private, loopback, link-local, and unresolvable hosts,
+caps the download at 10 MB, and does not follow redirects, to limit SSRF and
+denial-of-service risk when running inside a service. For anything broader,
+fetch in your own retrieval layer and pass the text in. killpass judges; it
+does not crawl.

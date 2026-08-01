@@ -52,9 +52,44 @@ def from_docx(path) -> str:
     return "\n".join(paragraphs)
 
 
+# Fetching untrusted URLs from inside a service is an SSRF/DoS surface.
+# from_url refuses private/loopback hosts, caps the download, and does not
+# follow redirects. If you need broader fetching, do it in your own retrieval
+# layer and pass the text in; killpass judges, it does not crawl.
+_MAX_URL_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
+def _blocks_private(host: str) -> bool:
+    import ipaddress, socket
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except OSError:
+        return True  # unresolvable: refuse
+    for info in infos:
+        ip = ipaddress.ip_address(info[4][0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+            return True
+    return False
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *a, **k):
+        return None  # do not follow redirects (redirect-to-internal SSRF)
+
+
 def from_url(url: str) -> str:
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        raise ValueError("from_url only accepts http(s) URLs with a host")
+    if _blocks_private(parsed.hostname):
+        raise ValueError(f"from_url refuses private/loopback/unresolvable host: {parsed.hostname!r}")
+    opener = urllib.request.build_opener(_NoRedirect)
     req = urllib.request.Request(url, headers=_UA)
-    raw = urllib.request.urlopen(req, timeout=60).read()
+    with opener.open(req, timeout=60) as resp:
+        raw = resp.read(_MAX_URL_BYTES + 1)
+    if len(raw) > _MAX_URL_BYTES:
+        raise ValueError(f"from_url response exceeds {_MAX_URL_BYTES} bytes; fetch it yourself and pass the text in")
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError:
