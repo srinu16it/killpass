@@ -23,7 +23,6 @@ pdf = ["pypdf>=4"]
 
 [project.urls]
 Homepage = "https://github.com/srinu16it/killpass"
-Evidence = "https://github.com/srinu16it/arin-research-notes"
 
 [tool.setuptools.packages.find]
 where = ["src"]

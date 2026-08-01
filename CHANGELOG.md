@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2 — 2026-08-01
+
+- Remove a stale project-metadata link that pointed at a now-private repo
+  (fixes the dead link shown on the PyPI page). No code changes.
+
 ## 0.2.1 — 2026-07-31
 
 Fixes from an independent code audit:
