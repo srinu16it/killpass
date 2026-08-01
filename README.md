@@ -107,7 +107,9 @@ Fetching stays separate from judging on purpose. `load()` runs before the skepti
 
 ## Status
 
-**v0.5.0, published and hardened.** `pip install killpass`. 107 tests including a 48-case mechanical adversarial pack in CI. The verdict contract is frozen at schema v3 ([SCHEMA.md](https://github.com/srinu16it/killpass/blob/main/SCHEMA.md)). Multiple rounds of adversarial review hardened the design, before and after each change. The verification patterns were extracted from a real research system.
+**v1.0.0 — stable.** `pip install killpass`. 107 tests including a 48-case mechanical adversarial pack in CI. The public API and the verdict schema (v3, [SCHEMA.md](https://github.com/srinu16it/killpass/blob/main/SCHEMA.md)) are frozen: 1.x will not break them. That is a promise about the contract, not a claim of large-scale production use, killpass is still early in adoption. The one job is done and hardened across multiple rounds of adversarial review; the verification patterns were extracted from a real research system.
+
+killpass stops here on purpose. Support-judgment (does the span *mean* the claim), observability metrics, and CLI or framework adapters are deliberately **not** in the library: the first needs an NLI or second-LLM step killpass refuses, the second would re-encode the verdict, and the third belongs in community leaves under their own names. The [expansion doctrine](https://github.com/srinu16it/killpass/blob/main/ARCHITECTURE.md) is why.
 
 ## Limitations
 

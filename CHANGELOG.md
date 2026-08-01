@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.0.0 — 2026-08-01
+
+Stability release. No behavior change from 0.5.0.
+
+- **The public API and verdict schema v3 are frozen.** 1.x releases will not
+  break `Skeptic.attack`, `dual_attack`, `Verdict`, `EvidenceSpan`,
+  `SourceDocument`, `load`/`load_all`, or the documented schema. SCHEMA.md is the
+  contract.
+- **What 1.0 means:** the one job (return a grounded CONFIRMED/REFUTED with a
+  verbatim audit trail, or fail closed to INSUFFICIENT) is complete and hardened
+  across multiple rounds of adversarial review. The interface is stable.
+- **What it does not mean:** not a claim of large-scale production use. killpass
+  is early in adoption. `grounded != supported` still holds, and the residual is
+  measured, not filtered.
+- **Scope, by doctrine.** Three milestones from the enhancement plan are
+  deliberately not in killpass: semantic support-judgment (needs an NLI,
+  embedding, or second-LLM step the library refuses), observability metrics
+  (would re-encode the verdict), and CLIs / framework adapters (community leaves
+  under their own names). killpass stays one small thing.
+
 ## 0.5.0 — 2026-08-01
 
 Evaluation layer. No library code change: the grounding gate, schema, and public

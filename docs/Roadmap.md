@@ -4,7 +4,7 @@ killpass is deliberately small. The core is frozen; growth is governed by
 [the expansion doctrine](https://github.com/srinu16it/killpass/blob/main/ARCHITECTURE.md)
 (*reach, never scope*).
 
-**Shipped (0.5.x)**, Skeptic core, the mechanical grounding gate, quote
+**Shipped (1.0, API + schema frozen)**, Skeptic core, the mechanical grounding gate, quote
 discipline (dump/echo/length), declared-source validation, strict-all
 grounding, truncation guard, operational/content split, input bounds,
 provenance/audit (evidence offsets, source hashes), a frozen verdict schema

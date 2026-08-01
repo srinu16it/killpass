@@ -124,7 +124,7 @@ documents and deciding how multi-chunk verdicts compose is your job; a small
 library should not own retrieval.
 
 ## Is it production-ready? Who uses it?
-It is a small, zero-dependency library at v0.5.x with 107 tests and a
+It is a small, zero-dependency library at v1.0 with 107 tests and a
 48-case mechanical adversarial pack in CI. The verification *patterns* come from one
 research stack (from a real research system); the library itself
 is early, and there is no multi-customer production claim, if you adopt it,
