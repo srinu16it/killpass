@@ -1,16 +1,29 @@
-# Verdict schema v2
+# Verdict schema v3
 
-`schema_version = 2`. Fields an integrator may pin:
+`schema_version = 3`. Fields an integrator may pin:
 
 | field | type | notes |
 |---|---|---|
 | `result` | `"CONFIRMED" \| "REFUTED" \| "INSUFFICIENT"` | `dual_attack` adds `"ESCALATE"`; `attack` never does |
 | `downgrade_reason` | str or null | null iff result is decisive; else a reason code below |
-| `evidence` | `list[EvidenceSpan]` | `EvidenceSpan = {quote: str, source_index: int}`; every span grounds; >=1 on decisive |
+| `evidence` | `list[EvidenceSpan]` | every span grounds; >=1 on decisive |
 | `rationale` | str | one plain paragraph |
 | `checks` | dict | exactly the five trap keys -> `yes`/`no`/`n/a` |
-| `schema_version` | int | `2` |
+| `source_manifest` | `list[SourceRef]` | one entry per judged source (v3) |
+| `schema_version` | int | `3` |
 | `killpass_version` | str | package version |
+
+`EvidenceSpan = {quote: str, source_index: int, start_char: int|null,
+end_char: int|null, source_sha256: str|null}`. `start_char`/`end_char` are a
+half-open range into the **original** cited source (v3); they are `null` unless
+the span maps to exactly one location and re-normalizing that slice reproduces
+the quote (exact-or-null). `source_sha256` is the fingerprint of the cited source.
+
+`SourceRef = {index: int, sha256: str, id: str|null, uri: str|null}`. `sha256`
+is the hex SHA-256 of the UTF-8 bytes of the source **as judged** (after any
+truncation, exactly what the model saw). `id`/`uri` are echoed from a
+`SourceDocument` input and never influence the verdict. killpass never fetches
+`uri`.
 
 ## Downgrade reasons
 
@@ -42,6 +55,17 @@ a content verdict):
 **Frozen mechanical constants:** min quote 12 chars, max 500, near-whole alpha
 0.5 (sources >=500 chars) / 0.9 (shorter), claim-echo = quote is a substring
 of the claim or its token set is a subset of the claim's.
+
+## Migration: v2 -> v3
+
+`schema_version=3` is purely additive. `result`, `downgrade_reason`,
+`evidence[].quote`, `evidence[].source_index`, `checks`, `rationale`, and every
+gate code and its meaning are unchanged. New optional fields
+(`evidence[].start_char`, `end_char`, `source_sha256`, and the top-level
+`source_manifest`) default to `null`/empty when unavailable. Offsets never affect
+a verdict: the result is decided entirely by the grounding gate, and an offset
+that cannot be resolved exactly is reported as `null`, not guessed. A consumer
+pinned to v2 must ignore the new fields, not crash.
 
 ## Migration: v1 -> v2
 

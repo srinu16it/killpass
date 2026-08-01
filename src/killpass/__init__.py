@@ -9,11 +9,12 @@ from ._version import __version__
 
 from .core import (
     CONFIRMED, REFUTED, INSUFFICIENT, ESCALATE, SCHEMA_VERSION,
-    Skeptic, Verdict, EvidenceSpan, dual_attack,
+    Skeptic, Verdict, EvidenceSpan, SourceDocument, SourceRef, dual_attack,
 )
 from .sources import load, load_all
 
 __all__ = [
-    "Skeptic", "Verdict", "EvidenceSpan", "dual_attack", "load", "load_all",
+    "Skeptic", "Verdict", "EvidenceSpan", "SourceDocument", "SourceRef",
+    "dual_attack", "load", "load_all",
     "CONFIRMED", "REFUTED", "INSUFFICIENT", "ESCALATE", "SCHEMA_VERSION", "__version__",
 ]

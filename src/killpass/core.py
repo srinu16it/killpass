@@ -7,14 +7,15 @@ engine and are measured, not hidden (tests/adversarial, SECURITY.md).
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 from ._version import __version__
 from .grounding import (
     INVALID_SOURCE_INDEX, Q_ECHO, Q_LONG, Q_NEAR_WHOLE, Q_SHORT,
-    Q_UNGROUNDED, SOURCE_INDEX_MISMATCH, check_quote, normalize,
+    Q_UNGROUNDED, SOURCE_INDEX_MISMATCH, check_quote, locate_span, normalize,
 )
 from .prompts import TRAP_KEYS, build_attack_prompt
 
@@ -23,11 +24,12 @@ _DECISIVE = {CONFIRMED, REFUTED}
 _RESULTS = {CONFIRMED, REFUTED, INSUFFICIENT}
 ESCALATE = "ESCALATE"
 
-# schema_version 2: v1 reason codes keep their meaning; new codes are added
-# for declared-source validation (F2), operational failure (F4), and input
-# bounds (F5). Consumers that pinned the v1 ten-code list MUST treat an
-# unknown code as a generic content failure, not crash. See SCHEMA.md.
-SCHEMA_VERSION = 2
+# schema_version 3: adds optional audit fields (evidence offsets, per-source
+# sha256, source manifest) on top of v2. v1/v2 reason codes and gate semantics
+# are unchanged; the new fields default to null/empty when unavailable.
+# Consumers pinning an older version MUST ignore unknown fields, not crash.
+# See SCHEMA.md.
+SCHEMA_VERSION = 3
 
 # Operational / bound reasons: the harness could not obtain a judgeable verdict.
 # These are NOT content verdicts; a crash or an oversize input is not "the
@@ -60,10 +62,35 @@ _SEVERITY = [
 ]
 
 
+@dataclass(frozen=True)
+class SourceDocument:
+    """Optional input wrapper: a single, already-formed source plus caller
+    metadata. killpass judges `content` exactly as if it were a plain str; `id`
+    and `uri` are carried through to the audit manifest and never influence the
+    verdict. killpass does NOT fetch `uri` (retrieval stays in your loader, out
+    of the judge)."""
+    content: str
+    id: Optional[str] = None
+    uri: Optional[str] = None
+
+
+@dataclass
+class SourceRef:
+    """One entry in a verdict's audit manifest: the fingerprint of a judged
+    source (post-truncation, exactly what the model saw) and its echoed id/uri."""
+    index: int
+    sha256: str
+    id: Optional[str] = None
+    uri: Optional[str] = None
+
+
 @dataclass
 class EvidenceSpan:
     quote: str
     source_index: int
+    start_char: Optional[int] = None   # offset into the ORIGINAL cited source, or None
+    end_char: Optional[int] = None     # exclusive end; None when offsets are not exact
+    source_sha256: Optional[str] = None  # fingerprint of the cited source
 
 
 @dataclass
@@ -76,15 +103,32 @@ class Verdict:
     schema_version: int = SCHEMA_VERSION
     killpass_version: str = __version__
     raw: str = ""
+    source_manifest: List[SourceRef] = field(default_factory=list)
 
     @property
     def survived(self) -> bool:
         return self.result == CONFIRMED
 
 
-def _insufficient(reason: str, *, rationale: str = "", raw: str = "", checks=None) -> Verdict:
+def _insufficient(reason: str, *, rationale: str = "", raw: str = "", checks=None,
+                  manifest=None) -> Verdict:
     return Verdict(INSUFFICIENT, rationale=rationale, downgrade_reason=reason,
-                   checks=checks or {}, raw=raw)
+                   checks=checks or {}, raw=raw, source_manifest=manifest or [])
+
+
+def _grounded_span(quote: str, idx: int, content: str, sha: str) -> EvidenceSpan:
+    """Build the span for an already-grounded quote, attaching best-effort audit
+    offsets. Isolated so an offset failure can never change the verdict: on any
+    doubt the offsets are None and the span still stands (it grounded)."""
+    start = end = None
+    try:
+        off = locate_span(content, normalize(quote))
+        if off is not None:
+            start, end = off
+    except Exception:  # noqa: BLE001 — audit annotation must never break a verdict
+        start = end = None
+    return EvidenceSpan(quote=quote, source_index=idx, start_char=start,
+                        end_char=end, source_sha256=sha)
 
 
 def _parse_response(text: str) -> Optional[dict]:
@@ -148,7 +192,7 @@ class Skeptic:
         self.max_model_response_chars = max_model_response_chars
         self.max_evidence_items = max_evidence_items
 
-    def attack(self, claim: str, sources: List[str]) -> Verdict:
+    def attack(self, claim: str, sources: "List[Union[str, SourceDocument, None]]") -> Verdict:
         # Type-misuse is a programmer error, surfaced as a clear TypeError at the
         # boundary, not an obscure AttributeError from deep inside (and not a
         # silent INSUFFICIENT that would hide the caller's bug). A None claim or
@@ -159,12 +203,24 @@ class Skeptic:
             raise TypeError(f"claim must be a str, got {type(claim).__name__}")
         sources = sources if sources is not None else []
         if not isinstance(sources, (list, tuple)):
-            raise TypeError(f"sources must be a list of str, got {type(sources).__name__}")
+            raise TypeError(f"sources must be a list, got {type(sources).__name__}")
+        # Each source is a str, a SourceDocument, or None (skipped). Anything else
+        # is boundary misuse. killpass judges content only; id/uri ride to the
+        # audit manifest and never touch the verdict.
+        parsed: List[tuple] = []
         for s in sources:
-            if s is not None and not isinstance(s, str):
-                raise TypeError(f"every source must be a str or None, got {type(s).__name__}")
+            if s is None:
+                continue
+            if isinstance(s, SourceDocument):
+                if not isinstance(s.content, str):
+                    raise TypeError(f"SourceDocument.content must be a str, got {type(s.content).__name__}")
+                parsed.append((s.content, s.id, s.uri))
+            elif isinstance(s, str):
+                parsed.append((s, None, None))
+            else:
+                raise TypeError(f"every source must be a str, SourceDocument, or None, got {type(s).__name__}")
 
-        clean = [s for s in sources if s and s.strip()]
+        clean = [(c, cid, curi) for (c, cid, curi) in parsed if c and c.strip()]
         if not clean:
             return _insufficient("NO_SOURCES", rationale="No sources provided; nothing can be verified.")
 
@@ -173,39 +229,47 @@ class Skeptic:
             return _insufficient(INPUT_TOO_LARGE, rationale="Claim exceeds max_claim_chars.")
         if len(clean) > self.max_sources:
             return _insufficient(INPUT_TOO_LARGE, rationale="Source count exceeds max_sources.")
-        if sum(len(s) for s in clean) > self.max_total_source_chars:
+        if sum(len(c) for (c, _, _) in clean) > self.max_total_source_chars:
             return _insufficient(INPUT_TOO_LARGE, rationale="Total source length exceeds max_total_source_chars.")
 
         truncated = False
         if self.max_source_chars is not None:
             capped = []
-            for s in clean:
-                if len(s) > self.max_source_chars:
+            for c, cid, curi in clean:
+                if len(c) > self.max_source_chars:
                     truncated = True
-                    capped.append(s[: self.max_source_chars])
+                    capped.append((c[: self.max_source_chars], cid, curi))
                 else:
-                    capped.append(s)
+                    capped.append((c, cid, curi))
             clean = capped
+
+        # The judged content (post-truncation) and its audit manifest. The hash
+        # fingerprints exactly what the model saw, not the pre-truncation source.
+        contents = [c for (c, _, _) in clean]
+        manifest = [SourceRef(index=i, sha256=hashlib.sha256(c.encode("utf-8")).hexdigest(),
+                              id=cid, uri=curi)
+                    for i, (c, cid, curi) in enumerate(clean)]
 
         # F4 operational split: a model crash or empty response is not a content
         # verdict. A model/transport failure never escapes as an exception and is
         # never called UNPARSEABLE.
         try:
-            raw = self.llm(build_attack_prompt(claim, clean, truncated=truncated))
+            raw = self.llm(build_attack_prompt(claim, contents, truncated=truncated))
         except Exception as e:  # noqa: BLE001 — any model/transport failure is operational
-            return _insufficient(LLM_ERROR, rationale=f"Model invocation failed: {type(e).__name__}.")
+            return _insufficient(LLM_ERROR, rationale=f"Model invocation failed: {type(e).__name__}.", manifest=manifest)
         if not isinstance(raw, str):
-            return _insufficient(LLM_ERROR, rationale="Model returned a non-text response.")
+            return _insufficient(LLM_ERROR, rationale="Model returned a non-text response.", manifest=manifest)
         raw = str(raw)  # flatten any str subclass so overridden methods can't run in parsing
         if not raw.strip():
-            return _insufficient(LLM_ERROR, rationale="Model returned an empty response.", raw=raw)
+            return _insufficient(LLM_ERROR, rationale="Model returned an empty response.", raw=raw, manifest=manifest)
         if len(raw) > self.max_model_response_chars:
             return _insufficient(RESPONSE_TOO_LARGE, rationale="Model response exceeds max_model_response_chars.",
-                                 raw=raw[: self.max_model_response_chars])
+                                 raw=raw[: self.max_model_response_chars], manifest=manifest)
 
         data = _parse_response(raw)
         if data is None:
-            return _insufficient("UNPARSEABLE", rationale="Skeptic response was not exactly one JSON object.", raw=raw)
+            return _insufficient("UNPARSEABLE", rationale="Skeptic response was not exactly one JSON object.",
+                                 raw=raw, manifest=manifest)
 
         # --- schema gate ---
         result = str(data.get("result", "")).upper()
@@ -218,34 +282,34 @@ class Skeptic:
                 or set(checks) != set(TRAP_KEYS)
                 or any(str(v).lower() not in {"yes", "no", "n/a"} for v in checks.values())):
             return _insufficient("SCHEMA", rationale="Skeptic response failed the verdict schema.",
-                                 raw=raw, checks=checks if isinstance(checks, dict) else {})
+                                 raw=raw, checks=checks if isinstance(checks, dict) else {}, manifest=manifest)
         checks = {k: str(v).lower() for k, v in checks.items()}
 
         if result == INSUFFICIENT:
             return Verdict(INSUFFICIENT, rationale=rationale, checks=checks,
-                           downgrade_reason="MODEL_INSUFFICIENT", raw=raw)
+                           downgrade_reason="MODEL_INSUFFICIENT", raw=raw, source_manifest=manifest)
 
         # --- decisive path ---
         if truncated:
-            return _insufficient("TRUNCATED", checks=checks, raw=raw,
+            return _insufficient("TRUNCATED", checks=checks, raw=raw, manifest=manifest,
                                  rationale="A source was truncated to the caller's budget; decisive verdict withheld.")
         if len(ev_raw) > self.max_evidence_items:
-            return _insufficient(RESPONSE_TOO_LARGE, checks=checks, raw=raw,
+            return _insufficient(RESPONSE_TOO_LARGE, checks=checks, raw=raw, manifest=manifest,
                                  rationale="Evidence item count exceeds max_evidence_items.")
         # F1 amend: malformed evidence is a SCHEMA failure, never a silent drop —
         # a fabricated companion that is not a well-formed item must not vanish
         # and let a real quote rescue the verdict.
         for e in ev_raw:
             if not isinstance(e, dict) or "quote" not in e or "source_index" not in e:
-                return _insufficient("SCHEMA", checks=checks, raw=raw,
+                return _insufficient("SCHEMA", checks=checks, raw=raw, manifest=manifest,
                                      rationale="An evidence item is missing quote or source_index.")
         if not ev_raw:
-            return _insufficient(Q_UNGROUNDED, checks=checks, raw=raw,
+            return _insufficient(Q_UNGROUNDED, checks=checks, raw=raw, manifest=manifest,
                                  rationale="Decisive verdict carried no evidence to ground.")
 
         # F1 strict-all: EVERY evidence item must ground, or the whole verdict
         # downgrades. One real quote does not rescue a fabricated companion.
-        norm_sources = [normalize(s) for s in clean]
+        norm_sources = [normalize(c) for c in contents]
         norm_claim = normalize(claim)
         spans: List[EvidenceSpan] = []
         failures: List[str] = []
@@ -253,14 +317,15 @@ class Skeptic:
             q = str(e.get("quote", ""))
             idx, reason = check_quote(q, norm_sources, norm_claim, e.get("source_index"))
             if idx is not None:
-                spans.append(EvidenceSpan(quote=q, source_index=idx))
+                spans.append(_grounded_span(q, idx, contents[idx], manifest[idx].sha256))
             else:
                 failures.append(reason)
         if failures:
             reason = min(failures, key=_SEVERITY.index)
-            return _insufficient(reason, checks=checks, raw=raw,
+            return _insufficient(reason, checks=checks, raw=raw, manifest=manifest,
                                  rationale="Verdict downgraded: an evidence quote failed the grounding gate.")
-        return Verdict(result, evidence=spans, rationale=rationale, checks=checks, raw=raw)
+        return Verdict(result, evidence=spans, rationale=rationale, checks=checks, raw=raw,
+                       source_manifest=manifest)
 
 
 def dual_attack(skeptic_a: Skeptic, skeptic_b: Skeptic, claim: str, sources: List[str]) -> dict:

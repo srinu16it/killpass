@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.4.0 — 2026-08-01
+
+Provenance and audit layer, adversarially reviewed before and after
+implementation. **Schema bumps to v3** (purely additive; see SCHEMA.md). The
+grounding gate is byte-identical to v0.3.
+
+- **Evidence offsets.** `EvidenceSpan` gains optional `start_char`/`end_char`
+  pointing into the original cited source, so an auditor can highlight the exact
+  span. They are exact-or-null: emitted only when the span maps to one location
+  and re-normalizing that slice reproduces the quote, `null` otherwise. Offsets
+  never affect a verdict.
+- **Source fingerprints.** Each judged source gets a SHA-256 of exactly the bytes
+  the model saw (after truncation). It appears on the span (`source_sha256`) and
+  in a new top-level `source_manifest`.
+- **`SourceDocument` input.** `attack` now accepts `str`, `SourceDocument`, or
+  `None` sources. `SourceDocument(content, id=None, uri=None)` carries caller
+  metadata into the manifest. killpass judges `content` only and never fetches
+  `uri` (retrieval stays in your loader, out of the judge).
+
 ## 0.3.0 — 2026-08-01
 
 Correctness hardening (P0 kernel fixes, adversarially reviewed before and

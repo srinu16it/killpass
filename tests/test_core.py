@@ -1,6 +1,8 @@
 import json
+import hashlib
 import pytest
-from killpass import Skeptic, Verdict, dual_attack, INSUFFICIENT, CONFIRMED, REFUTED, ESCALATE
+from killpass import (Skeptic, Verdict, dual_attack, SourceDocument, SourceRef,
+                      INSUFFICIENT, CONFIRMED, REFUTED, ESCALATE)
 
 WST = "West Pharmaceutical is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
 
@@ -14,7 +16,7 @@ def ok_checks():
 def test_grounded_confirm():
     v = Skeptic(canned({"result":"CONFIRMED","evidence":[{"quote":"increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars","source_index":0}],"rationale":"raise","checks":ok_checks()})).attack("West raised EPS guidance",[WST])
     assert v.result==CONFIRMED and v.survived and v.evidence[0].source_index==0 and v.downgrade_reason is None
-    assert v.schema_version==2
+    assert v.schema_version==3
 
 def test_fabricated_mismatches_cited_source():
     # fabricated quote cites source 0 but is not in it -> provenance failure
@@ -232,3 +234,102 @@ def test_claim_echo_with_trailing_punctuation():
     src = "Analysts wrote: Acme raised its FY26 guidance. The filing itself showed no change and the outlook stayed flat."
     v = Skeptic(canned({"result":"CONFIRMED","evidence":[{"quote":"Acme raised its FY26 guidance.","source_index":0}],"rationale":"x","checks":ok_checks()})).attack("Acme raised its FY26 guidance",[src])
     assert v.result==INSUFFICIENT and v.downgrade_reason=="CLAIM_ECHO"
+
+# --- v0.4: provenance / audit (schema v3) ---
+
+def _sha(s): return hashlib.sha256(s.encode("utf-8")).hexdigest()
+
+def test_schema_version_is_3():
+    v = Skeptic(canned({"result":"REFUTED","evidence":[{"quote":"up from the previous range of 8.40 to 8.75","source_index":0}],"rationale":"x","checks":ok_checks()})).attack("c",[WST])
+    assert v.schema_version==3
+
+def test_offsets_point_to_original_span():
+    span="up from the previous range of 8.40 to 8.75"
+    v = Skeptic(canned({"result":"REFUTED","evidence":[{"quote":span,"source_index":0}],"rationale":"x","checks":ok_checks()})).attack("c",[WST])
+    e = v.evidence[0]
+    assert e.start_char is not None and WST[e.start_char:e.end_char]==span
+
+def test_offsets_null_when_ambiguous_but_still_grounds():
+    src="repeat this exact phrase and later repeat this exact phrase once more here now"
+    q="repeat this exact phrase"
+    v = Skeptic(canned({"result":"REFUTED","evidence":[{"quote":q,"source_index":0}],"rationale":"x","checks":ok_checks()})).attack("c",[src])
+    assert v.result==REFUTED and v.evidence[0].start_char is None and v.evidence[0].end_char is None
+
+def test_offsets_handle_normalized_span():
+    # smart quotes + case differ from the raw quote; offsets map to the ORIGINAL
+    src='The board said the outlook was “RAISED to Record Levels” in the filing this quarter here.'
+    q="raised to record levels"
+    v = Skeptic(canned({"result":"CONFIRMED","evidence":[{"quote":q,"source_index":0}],"rationale":"x","checks":ok_checks()})).attack("c",[src])
+    e = v.evidence[0]
+    from killpass.grounding import normalize
+    assert e.start_char is not None and normalize(src[e.start_char:e.end_char])==normalize(q)
+
+def test_source_sha256_on_span_and_manifest():
+    span="up from the previous range of 8.40 to 8.75"
+    v = Skeptic(canned({"result":"REFUTED","evidence":[{"quote":span,"source_index":0}],"rationale":"x","checks":ok_checks()})).attack("c",[WST])
+    assert v.evidence[0].source_sha256==_sha(WST)
+    assert len(v.source_manifest)==1 and v.source_manifest[0].sha256==_sha(WST) and v.source_manifest[0].index==0
+
+def test_manifest_hashes_the_truncated_judged_string():
+    sk = Skeptic(canned({"result":"INSUFFICIENT","evidence":[],"rationale":"x","checks":ok_checks()}), max_source_chars=20)
+    v = sk.attack("c",[WST])
+    assert v.source_manifest[0].sha256==_sha(WST[:20])   # hash of what the model saw, not the full source
+
+def test_source_document_input_carries_id_and_uri():
+    span="up from the previous range of 8.40 to 8.75"
+    doc = SourceDocument(content=WST, id="doc-1", uri="https://example.test/wst")
+    v = Skeptic(canned({"result":"REFUTED","evidence":[{"quote":span,"source_index":0}],"rationale":"x","checks":ok_checks()})).attack("c",[doc])
+    assert v.result==REFUTED
+    ref = v.source_manifest[0]
+    assert ref.id=="doc-1" and ref.uri=="https://example.test/wst" and ref.sha256==_sha(WST)
+
+def test_source_document_and_str_mixed():
+    span="up from the previous range of 8.40 to 8.75"
+    v = Skeptic(canned({"result":"REFUTED","evidence":[{"quote":span,"source_index":1}],"rationale":"x","checks":ok_checks()})).attack("c",["unrelated first source text here", SourceDocument(content=WST, id="d2")])
+    assert v.result==REFUTED and v.evidence[0].source_index==1 and v.source_manifest[1].id=="d2"
+
+def test_source_document_non_str_content_raises():
+    with pytest.raises(TypeError):
+        Skeptic(canned({})).attack("c",[SourceDocument(content=123)])
+
+def test_locate_span_never_emits_a_wrong_offset_property():
+    """Property: any non-null (s,e) from locate_span must re-normalize to the
+    quote, over a fuzz of adversarial unicode. Exact-or-null, by construction."""
+    import random
+    from killpass.grounding import locate_span, normalize, _normalize_with_map
+    alphabet = list("abcAB 12.,") + ["́","̣","​","﻿","ß","é",
+                                      "½","’","—","Ａ","\t","  ","ẞ"]
+    rng = random.Random(20260801)
+    emits = 0
+    for _ in range(5000):
+        src = "".join(rng.choice(alphabet) for _ in range(rng.randint(0, 22)))
+        assert _normalize_with_map(src)[0] == normalize(src)   # map integrity
+        ns = normalize(src)
+        if ns and rng.random() < 0.7 and len(ns) >= 2:
+            a = rng.randint(0, len(ns)-1); b = rng.randint(a+1, len(ns)); nq = ns[a:b]
+        else:
+            nq = normalize("".join(rng.choice(alphabet) for _ in range(rng.randint(1,5))))
+        off = locate_span(src, nq)
+        if off is None:
+            continue
+        emits += 1
+        s, e = off
+        assert 0 <= s < e <= len(src)
+        assert normalize(src[s:e]) == nq
+    assert emits > 0   # the fuzz actually exercised the emit path
+
+def test_offsets_never_change_the_verdict_invariance():
+    # identical result/reason/quote/source_index whether or not offsets resolve
+    span="up from the previous range of 8.40 to 8.75"
+    payload={"result":"CONFIRMED","evidence":[{"quote":span,"source_index":0}],"rationale":"x","checks":ok_checks()}
+    v = Skeptic(canned(payload)).attack("c",[WST])
+    import killpass.core as core
+    orig = core.locate_span
+    try:
+        core.locate_span = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("offset engine down"))
+        v2 = Skeptic(canned(payload)).attack("c",[WST])
+    finally:
+        core.locate_span = orig
+    assert v.result==v2.result==CONFIRMED
+    assert (v2.evidence[0].quote, v2.evidence[0].source_index)==(span,0)
+    assert v2.evidence[0].start_char is None  # engine down -> null offsets, verdict intact
