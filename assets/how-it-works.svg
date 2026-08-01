@@ -1,72 +1,90 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 580" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
   <style>
     .flow { stroke-dasharray: 8 6; animation: dash 1.2s linear infinite; }
     @keyframes dash { to { stroke-dashoffset: -28; } }
-    .stamp { animation: pop 2.4s ease-in-out infinite; transform-origin: 790px 205px; }
-    @keyframes pop { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-    .stampg { animation: pop2 2.4s ease-in-out infinite; transform-origin: 790px 435px; }
-    @keyframes pop2 { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
     .scan { animation: scan 2.8s ease-in-out infinite; }
-    @keyframes scan { 0%,100% { transform: translateY(0); } 50% { transform: translateY(46px); } }
+    @keyframes scan { 0%,100% { transform: translateY(0); } 50% { transform: translateY(34px); } }
+    .pop { animation: pop 2.6s ease-in-out infinite; transform-origin: 480px 345px; }
+    @keyframes pop { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
     .blink { animation: blink 2.8s ease-in-out infinite; }
-    @keyframes blink { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+    @keyframes blink { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
+    .dim { opacity: .55; }
   </style>
 
-  <rect x="0" y="0" width="960" height="540" rx="16" fill="#151a23"/>
-  <text x="480" y="44" text-anchor="middle" fill="#f3f4f6" font-size="26" font-weight="700">How killpass works</text>
-  <text x="480" y="70" text-anchor="middle" fill="#9ca3af" font-size="15">AI that double-checks itself before it speaks</text>
+  <rect x="0" y="0" width="960" height="580" rx="16" fill="#151a23"/>
+  <text x="480" y="40" text-anchor="middle" fill="#f3f4f6" font-size="26" font-weight="700">How killpass works</text>
+  <text x="480" y="66" text-anchor="middle" fill="#9ca3af" font-size="15">AI that double-checks itself before it speaks</text>
 
-  <!-- Step 1: the claim -->
-  <rect x="30" y="105" width="265" height="200" rx="12" fill="#1f2632" stroke="#374151"/>
-  <text x="162" y="135" text-anchor="middle" fill="#60a5fa" font-size="15" font-weight="700">1 · YOUR AI CLAIMS</text>
-  <rect x="50" y="152" width="225" height="92" rx="10" fill="#243044"/>
-  <text x="162" y="182" text-anchor="middle" fill="#e5e7eb" font-size="14">“A new study PROVES</text>
-  <text x="162" y="202" text-anchor="middle" fill="#e5e7eb" font-size="14">coffee prevents</text>
-  <text x="162" y="222" text-anchor="middle" fill="#e5e7eb" font-size="14">diabetes!”</text>
-  <text x="162" y="278" text-anchor="middle" fill="#9ca3af" font-size="12">Sounds confident.</text>
-  <text x="162" y="294" text-anchor="middle" fill="#9ca3af" font-size="12">Is it true?</text>
+  <!-- ===== Stage 1: inputs ===== -->
+  <rect x="24" y="86" width="276" height="170" rx="12" fill="#1f2632" stroke="#374151"/>
+  <text x="162" y="110" text-anchor="middle" fill="#60a5fa" font-size="14" font-weight="700">1 · CLAIM + YOUR SOURCES</text>
+  <rect x="40" y="122" width="244" height="46" rx="9" fill="#243044"/>
+  <text x="162" y="141" text-anchor="middle" fill="#e5e7eb" font-size="12.5">“A study PROVES coffee</text>
+  <text x="162" y="159" text-anchor="middle" fill="#e5e7eb" font-size="12.5">PREVENTS diabetes”</text>
+  <rect x="40" y="176" width="244" height="42" rx="9" fill="#2a2f3a"/>
+  <text x="162" y="193" text-anchor="middle" fill="#cbd5e1" font-size="11.5">your source: the study</text>
+  <text x="162" y="209" text-anchor="middle" fill="#94a3b8" font-size="11">(observational cohort…)</text>
+  <text x="162" y="240" text-anchor="middle" fill="#6b7280" font-size="10.5">you bring the sources · it never browses</text>
 
-  <line x1="300" y1="205" x2="345" y2="205" stroke="#60a5fa" stroke-width="3" class="flow"/>
-  <polygon points="345,198 359,205 345,212" fill="#60a5fa"/>
+  <line x1="300" y1="171" x2="338" y2="171" stroke="#60a5fa" stroke-width="3" class="flow"/>
+  <polygon points="338,164 352,171 338,178" fill="#60a5fa"/>
 
-  <!-- Step 2: the skeptic -->
-  <rect x="365" y="105" width="290" height="200" rx="12" fill="#1f2632" stroke="#374151"/>
-  <text x="510" y="135" text-anchor="middle" fill="#f59e0b" font-size="15" font-weight="700">2 · THE SKEPTIC ATTACKS</text>
-  <text x="510" y="157" text-anchor="middle" fill="#d1d5db" font-size="12">Instruction: try to DESTROY this claim</text>
-  <text x="510" y="173" text-anchor="middle" fill="#d1d5db" font-size="12">using only the source document.</text>
-  <rect x="395" y="185" width="230" height="100" rx="8" fill="#e5e7eb"/>
-  <rect x="395" y="185" width="230" height="20" rx="8" fill="#cbd5e1"/>
-  <text x="510" y="200" text-anchor="middle" fill="#334155" font-size="11" font-weight="700">THE STUDY (the source)</text>
-  <text x="510" y="228" text-anchor="middle" fill="#475569" font-size="11">“observational cohort study…”</text>
-  <text x="510" y="252" text-anchor="middle" fill="#b91c1c" font-size="11" font-weight="700">“no causal conclusions</text>
-  <text x="510" y="267" text-anchor="middle" fill="#b91c1c" font-size="11" font-weight="700">can be drawn.”</text>
-  <rect x="395" y="212" width="230" height="3" fill="#f59e0b" class="scan" opacity="0.9"/>
+  <!-- ===== Stage 2: skeptic ===== -->
+  <rect x="342" y="86" width="276" height="170" rx="12" fill="#1f2632" stroke="#374151"/>
+  <text x="480" y="110" text-anchor="middle" fill="#f59e0b" font-size="14" font-weight="700">2 · SKEPTIC ATTACKS</text>
+  <text x="480" y="130" text-anchor="middle" fill="#d1d5db" font-size="11.5">Refute-first: one LLM, told to</text>
+  <text x="480" y="146" text-anchor="middle" fill="#d1d5db" font-size="11.5">DESTROY the claim using ONLY</text>
+  <text x="480" y="162" text-anchor="middle" fill="#d1d5db" font-size="11.5">the sources — and quote them.</text>
+  <rect x="358" y="176" width="244" height="60" rx="9" fill="#243044"/>
+  <text x="480" y="196" text-anchor="middle" fill="#fbbf24" font-size="11.5" font-weight="700">it proposes: REFUTED + a quote</text>
+  <text x="480" y="215" text-anchor="middle" fill="#e5e7eb" font-size="11">“no causal conclusions</text>
+  <text x="480" y="230" text-anchor="middle" fill="#e5e7eb" font-size="11">can be drawn.”</text>
 
-  <line x1="660" y1="205" x2="705" y2="205" stroke="#f59e0b" stroke-width="3" class="flow"/>
-  <polygon points="705,198 719,205 705,212" fill="#f59e0b"/>
+  <line x1="618" y1="171" x2="656" y2="171" stroke="#f59e0b" stroke-width="3" class="flow"/>
+  <polygon points="656,164 670,171 656,178" fill="#f59e0b"/>
 
-  <!-- Step 3: the verdict -->
-  <rect x="725" y="105" width="205" height="200" rx="12" fill="#1f2632" stroke="#374151"/>
-  <text x="827" y="135" text-anchor="middle" fill="#ef4444" font-size="15" font-weight="700">3 · THE VERDICT</text>
-  <g class="stamp">
-    <rect x="740" y="170" width="175" height="60" rx="8" fill="none" stroke="#ef4444" stroke-width="4"/>
-    <text x="827" y="210" text-anchor="middle" fill="#ef4444" font-size="28" font-weight="800">REFUTED</text>
+  <!-- ===== Stage 3: the gate ===== -->
+  <rect x="660" y="86" width="276" height="170" rx="12" fill="#1f2632" stroke="#374151"/>
+  <text x="798" y="110" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700">3 · GROUNDING GATE</text>
+  <text x="798" y="127" text-anchor="middle" fill="#c4b5fd" font-size="10.5" font-weight="700">checked by code, not trust</text>
+  <text x="798" y="146" text-anchor="middle" fill="#d1d5db" font-size="11">Is that quote a verbatim</text>
+  <text x="798" y="160" text-anchor="middle" fill="#d1d5db" font-size="11">span of the cited source?</text>
+  <rect x="676" y="170" width="244" height="44" rx="8" fill="#e5e7eb"/>
+  <rect x="686" y="182" width="224" height="14" rx="4" fill="#c7f9d6"/>
+  <text x="798" y="193" text-anchor="middle" fill="#166534" font-size="10.5" font-weight="700">“…no causal conclusions can be drawn…”</text>
+  <text x="798" y="209" text-anchor="middle" fill="#64748b" font-size="9.5">exact match at chars 412–447 ✓</text>
+  <rect x="676" y="176" width="244" height="3" fill="#a78bfa" class="scan" opacity="0.9"/>
+  <text x="798" y="238" text-anchor="middle" fill="#6b7280" font-size="10">invented · dumped · echoed · mis-cited → fails</text>
+
+  <!-- ===== Stage 4: three outcomes ===== -->
+  <text x="480" y="292" text-anchor="middle" fill="#e5e7eb" font-size="14" font-weight="700">4 · THE VERDICT — one of three, each with an audit trail</text>
+
+  <rect x="60" y="308" width="252" height="74" rx="10" fill="#182220" stroke="#14532d"/>
+  <text x="186" y="336" text-anchor="middle" fill="#22c55e" font-size="20" font-weight="800">CONFIRMED</text>
+  <text x="186" y="360" text-anchor="middle" fill="#86efac" font-size="11">a real quote grounds the claim</text>
+  <text x="186" y="374" text-anchor="middle" fill="#6b7280" font-size="10">(the honest claim passes)</text>
+
+  <g class="pop">
+    <rect x="354" y="308" width="252" height="74" rx="10" fill="#241a1a" stroke="#7f1d1d"/>
+    <text x="480" y="336" text-anchor="middle" fill="#ef4444" font-size="20" font-weight="800">REFUTED</text>
+    <text x="480" y="360" text-anchor="middle" fill="#fca5a5" font-size="11">a grounded quote kills it</text>
+    <text x="480" y="374" text-anchor="middle" fill="#9ca3af" font-size="10">← the coffee overclaim lands here</text>
   </g>
-  <text x="827" y="258" text-anchor="middle" fill="#d1d5db" font-size="11">with the exact quote</text>
-  <text x="827" y="274" text-anchor="middle" fill="#d1d5db" font-size="11">from the document</text>
-  <text x="827" y="290" text-anchor="middle" fill="#d1d5db" font-size="11">as proof</text>
 
-  <!-- Bottom strip: the honest claim passes -->
-  <rect x="30" y="340" width="900" height="150" rx="12" fill="#182220" stroke="#14532d"/>
-  <text x="480" y="368" text-anchor="middle" fill="#22c55e" font-size="14" font-weight="700">THE SKEPTIC IS NOT ANTI-CLAIM — IT IS ANTI-OVERCLAIM</text>
-  <rect x="55" y="385" width="330" height="80" rx="10" fill="#243044"/>
-  <text x="220" y="415" text-anchor="middle" fill="#e5e7eb" font-size="13">Honest claim, same study:</text>
-  <text x="220" y="437" text-anchor="middle" fill="#e5e7eb" font-size="13">“study FOUND 12% lower incidence”</text>
-  <line x1="395" y1="425" x2="660" y2="425" stroke="#22c55e" stroke-width="3" class="flow"/>
-  <polygon points="660,418 674,425 660,432" fill="#22c55e"/>
-  <g class="stampg">
-    <rect x="690" y="398" width="200" height="54" rx="8" fill="none" stroke="#22c55e" stroke-width="4"/>
-    <text x="790" y="434" text-anchor="middle" fill="#22c55e" font-size="24" font-weight="800">CONFIRMED</text>
-  </g>
-  <text x="480" y="512" text-anchor="middle" fill="#9ca3af" font-size="13" class="blink">Kills overclaims · Passes truth · Every verdict must quote its document — checked by code, not trust</text>
+  <rect x="648" y="308" width="252" height="74" rx="10" fill="#231f18" stroke="#78350f"/>
+  <text x="774" y="336" text-anchor="middle" fill="#f59e0b" font-size="18" font-weight="800">INSUFFICIENT</text>
+  <text x="774" y="360" text-anchor="middle" fill="#fcd34d" font-size="11">no real quote → fails safe</text>
+  <text x="774" y="374" text-anchor="middle" fill="#6b7280" font-size="10">(never a confident guess)</text>
+
+  <!-- audit trail -->
+  <rect x="60" y="398" width="840" height="52" rx="10" fill="#1b2130" stroke="#334155"/>
+  <text x="80" y="419" fill="#94a3b8" font-size="11" font-weight="700">AUDIT TRAIL</text>
+  <text x="80" y="438" fill="#e5e7eb" font-size="11.5">evidence “no causal conclusions can be drawn”  ·  source 0  ·  chars 412–447  ·  sha256 9db8ca…</text>
+  <text x="820" y="419" text-anchor="end" fill="#64748b" font-size="10">verbatim span · which source · exact offset · fingerprint</text>
+
+  <!-- honest footer -->
+  <rect x="60" y="466" width="840" height="66" rx="10" fill="#171d28" stroke="#374151"/>
+  <text x="480" y="490" text-anchor="middle" fill="#c4b5fd" font-size="13" font-weight="700">Grounded ≠ supported</text>
+  <text x="480" y="510" text-anchor="middle" fill="#cbd5e1" font-size="11.5">The gate proves the quote is REAL, not that the claim is TRUE. Negation, rumor and sarcasm are measured, not hidden.</text>
+  <text x="480" y="526" text-anchor="middle" fill="#9ca3af" font-size="11" class="blink">Every decisive verdict must quote its source — verified by deterministic code, no second LLM.</text>
 </svg>
