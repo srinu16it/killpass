@@ -33,5 +33,13 @@ killpass = ["py.typed"]
 [tool.setuptools.dynamic]
 version = {attr = "killpass._version.__version__"}
 
+[tool.ruff]
+# High-signal, low-noise: pyflakes (real bugs), a subset of pycodestyle errors,
+# and import order. Not the full opinionated default; some long lines here are
+# intentional (prompt text, fixtures).
+line-length = 200
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

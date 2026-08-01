@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.0 — 2026-08-01
+
+Hardening release (additive; no API or schema change).
+
+- **Loader denial-of-service limits.** `from_docx` reads `word/document.xml`
+  through a bounded stream, so a zip bomb is refused before it is decompressed.
+  `from_pdf` rejects oversize files and page counts. `from_url` rejects a
+  non-text `Content-Type` instead of stripping a binary blob. These loaders run
+  before the judge; they are a convenience, not a hardened crawler (SECURITY.md).
+- **Per-run nonce prompt delimiters.** The claim and each source are fenced with
+  a random per-call token chosen not to appear in the inputs, so a source cannot
+  forge the data fence with a fixed end-marker. Defense-in-depth, not immunity.
+- **Continuous integration hardened.** Adds a ruff lint gate, a build job that
+  installs the built wheel into a clean environment and smoke-imports it, and
+  Python 3.13 to the matrix.
+
 ## 1.0.1 — 2026-08-01
 
 Correctness patch from an external review. No API or schema change: these fixes

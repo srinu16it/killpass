@@ -14,8 +14,16 @@ from typing import Callable, List, Optional, Union
 
 from ._version import __version__
 from .grounding import (
-    INVALID_SOURCE_INDEX, Q_ECHO, Q_LONG, Q_NEAR_WHOLE, Q_SHORT,
-    Q_UNGROUNDED, SOURCE_INDEX_MISMATCH, check_quote, locate_span, normalize,
+    INVALID_SOURCE_INDEX,
+    Q_ECHO,
+    Q_LONG,
+    Q_NEAR_WHOLE,
+    Q_SHORT,
+    Q_UNGROUNDED,
+    SOURCE_INDEX_MISMATCH,
+    check_quote,
+    locate_span,
+    normalize,
 )
 from .prompts import TRAP_KEYS, build_attack_prompt
 

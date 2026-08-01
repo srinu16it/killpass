@@ -33,18 +33,36 @@ under a refute-first skeptic,"* never as *"proven true."*
 
 ## Prompt injection via sources
 
-Sources are untrusted input. killpass wraps each in
-`<<<UNTRUSTED_SOURCE>>>` delimiters and instructs the model to treat their
-content as data, not instructions. This is **defense-in-depth, not
-immunity**, no pure-prompt library can be injection-proof. Mitigations:
-use `dual_attack` and route ESCALATE to a human for high-stakes claims;
-never treat a CONFIRMED as cryptographic proof.
+Sources are untrusted input. killpass wraps the claim and each source in
+delimiters carrying a **per-run random token** (`<<<KP_SRC_<token>_i>>>`) and
+instructs the model to treat their content as data, not instructions. The token
+changes every call and is chosen so it does not already appear in the inputs, so
+a source cannot forge the fence by pasting a fixed end-marker. This is
+**defense-in-depth, not immunity**, no pure-prompt library can be
+injection-proof. Mitigations: use `dual_attack` and route ESCALATE to a human
+for high-stakes claims; never treat a CONFIRMED as cryptographic proof.
 
-One concrete residual: a source can embed the literal end-delimiter
-(`<<<END_UNTRUSTED_SOURCE 0>>>`) followed by its own instructions, breaking
-out of the data fence. A zero-dependency prompt library cannot fully seal
-this. The honest mitigation is the same: dual_attack + human on ESCALATE,
-and never trusting a lone CONFIRMED from adversarial documents.
+Residual: an attacker who guesses the random token (or a model that ignores the
+data-fence instruction entirely) can still attempt a breakout. A zero-dependency
+prompt library cannot fully seal this. The honest mitigation is the same:
+dual_attack + human on ESCALATE, and never trusting a lone CONFIRMED from
+adversarial documents.
+
+## Loaders run on untrusted files (`load`)
+
+`load()` runs before the judge, as your retrieval step, and is a convenience, not
+a hardened crawler. It caps its work so a hostile file cannot exhaust the process:
+
+- **`from_docx`** reads `word/document.xml` through a bounded stream, so a small
+  archive that claims to expand to gigabytes (a zip bomb) is refused before it is
+  decompressed.
+- **`from_pdf`** rejects oversize files and page counts.
+- **`from_url`** refuses private/loopback/link-local/unresolvable hosts, does not
+  follow redirects, caps the download, and rejects a non-text `Content-Type`
+  instead of stripping a binary blob. One residual it cannot fully close in the
+  standard library: DNS rebinding between the host check and the connection. For
+  anything adversarial, fetch and extract in your own retrieval layer and pass the
+  text in. killpass judges; it does not crawl.
 
 ## Sources reflect what you gave it
 
@@ -79,18 +97,3 @@ The frozen verdict contract is [SCHEMA.md](SCHEMA.md) (schema v3).
 Found a way to make a decisive verdict carry a worthless quote? That's a
 bug in the one job, open an issue with a reproducing fixture
 (claim + sources + the model JSON). Real, dated cases preferred.
-
-
-## Untrusted inputs (claim and sources)
-
-Both the claim and the sources are wrapped in `<<<UNTRUSTED_...>>>` markers and
-the model is told to treat them as data, not instructions. This is
-defense-in-depth against prompt injection in either input, not immunity.
-
-## URL loading (`from_url`)
-
-`from_url` refuses private, loopback, link-local, and unresolvable hosts,
-caps the download at 10 MB, and does not follow redirects, to limit SSRF and
-denial-of-service risk when running inside a service. For anything broader,
-fetch in your own retrieval layer and pass the text in. killpass judges; it
-does not crawl.

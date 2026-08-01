@@ -5,8 +5,11 @@ code + offset exactness) deterministically. The live residual classes (negation,
 rumor, sarcasm, hypothetical) carry `forbidden_results` instead and are measured
 against a real model in bench/, never asserted here.
 """
-import json, pathlib
+import json
+import pathlib
+
 import pytest
+
 from killpass import Skeptic
 
 FIX = json.loads((pathlib.Path(__file__).parent / "adversarial" / "fixtures.json").read_text())

@@ -17,6 +17,15 @@ from pathlib import Path
 
 _UA = {"User-Agent": "killpass-source-loader (+https://github.com/srinu16it/killpass)"}
 
+# Loaders run on untrusted files/URLs, so each caps its work. Defaults are
+# generous; a real document clears them, a decompression bomb or binary blob
+# does not. killpass judges text, it is not a hardened crawler (see SECURITY.md).
+_MAX_DOCX_XML_BYTES = 64 * 1024 * 1024   # decompressed word/document.xml
+_MAX_PDF_BYTES = 64 * 1024 * 1024        # PDF file on disk
+_MAX_PDF_PAGES = 5000
+# from_url only decodes text; a binary Content-Type is rejected, not stripped.
+_TEXT_CONTENT_TYPES = {"application/xhtml+xml", "application/xml", "text/xml"}
+
 
 def load(source: str) -> str:
     """Load one source (file path or URL) as plain text.
@@ -41,9 +50,19 @@ def load_all(sources: list) -> list:
 
 
 def from_docx(path) -> str:
-    """A .docx is a zip; the text lives in word/document.xml. Stdlib only."""
+    """A .docx is a zip; the text lives in word/document.xml. Stdlib only.
+
+    Guarded against decompression bombs: document.xml is read through a bounded
+    stream, so a small archive claiming to expand to gigabytes is refused before
+    it is decompressed, not after."""
     with zipfile.ZipFile(path) as z:
-        xml = z.read("word/document.xml").decode("utf-8", errors="replace")
+        with z.open("word/document.xml") as f:
+            data = f.read(_MAX_DOCX_XML_BYTES + 1)   # incremental decompress, bounded
+        if len(data) > _MAX_DOCX_XML_BYTES:
+            raise ValueError(
+                f"docx word/document.xml exceeds {_MAX_DOCX_XML_BYTES} bytes decompressed "
+                "(possible zip bomb); extract it yourself and pass the text in")
+        xml = data.decode("utf-8", errors="replace")
     paragraphs = []
     for para in re.findall(r"<w:p[ >].*?</w:p>|<w:p/>", xml, flags=re.S):
         runs = re.findall(r"<w:t[^>]*>(.*?)</w:t>", para, flags=re.S)
@@ -60,7 +79,8 @@ _MAX_URL_BYTES = 10 * 1024 * 1024  # 10 MB
 
 
 def _blocks_private(host: str) -> bool:
-    import ipaddress, socket
+    import ipaddress
+    import socket
     try:
         infos = socket.getaddrinfo(host, None)
     except OSError:
@@ -87,6 +107,11 @@ def from_url(url: str) -> str:
     opener = urllib.request.build_opener(_NoRedirect)
     req = urllib.request.Request(url, headers=_UA)
     with opener.open(req, timeout=60) as resp:
+        ctype = (resp.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+        if ctype and not (ctype.startswith("text/") or ctype in _TEXT_CONTENT_TYPES):
+            raise ValueError(
+                f"from_url expected a text document, got Content-Type {ctype!r}; "
+                "fetch and extract it yourself and pass the text in")
         raw = resp.read(_MAX_URL_BYTES + 1)
     if len(raw) > _MAX_URL_BYTES:
         raise ValueError(f"from_url response exceeds {_MAX_URL_BYTES} bytes; fetch it yourself and pass the text in")
@@ -113,5 +138,11 @@ def from_pdf(path) -> str:
         raise ImportError(
             "PDF support needs the optional extra: pip install killpass[pdf]"
         ) from e
+    size = Path(path).stat().st_size
+    if size > _MAX_PDF_BYTES:
+        raise ValueError(f"PDF exceeds {_MAX_PDF_BYTES} bytes; extract the text yourself and pass it in")
     reader = PdfReader(str(path))
-    return "\n\n".join((page.extract_text() or "") for page in reader.pages)
+    pages = reader.pages
+    if len(pages) > _MAX_PDF_PAGES:
+        raise ValueError(f"PDF has {len(pages)} pages (> {_MAX_PDF_PAGES}); extract the pages you need and pass the text in")
+    return "\n\n".join((page.extract_text() or "") for page in pages)

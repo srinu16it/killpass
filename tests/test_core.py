@@ -1,8 +1,9 @@
-import json
 import hashlib
+import json
+
 import pytest
-from killpass import (Skeptic, Verdict, dual_attack, SourceDocument, SourceRef,
-                      INSUFFICIENT, CONFIRMED, REFUTED, ESCALATE)
+
+from killpass import CONFIRMED, ESCALATE, INSUFFICIENT, REFUTED, Skeptic, SourceDocument, dual_attack
 
 WST = "West Pharmaceutical is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
 
@@ -25,7 +26,8 @@ def test_fabricated_mismatches_cited_source():
 
 def test_no_join_seam():
     # quote spans two sources; cites source 0 but is not verbatim in it
-    a="the company said guidance was"; b="raised sharply this year in a filing with regulators"
+    a="the company said guidance was"
+    b="raised sharply this year in a filing with regulators"
     v = Skeptic(canned({"result":"CONFIRMED","evidence":[{"quote":"guidance was raised sharply","source_index":0}],"rationale":"x","checks":ok_checks()})).attack("guidance was raised",[a,b])
     assert v.result==INSUFFICIENT and v.downgrade_reason=="SOURCE_INDEX_MISMATCH"
 
@@ -80,7 +82,7 @@ def test_grounded_elsewhere_is_not_grounded_as_cited():
 
 def test_fenced_json_parses():
     payload = {"result":"REFUTED","evidence":[{"quote":"up from the previous range of 8.40 to 8.75","source_index":0}],"rationale":"x","checks":ok_checks()}
-    llm = lambda p: "```json\n" + json.dumps(payload) + "\n```"
+    def llm(p): return "```json\n" + json.dumps(payload) + "\n```"
     v = Skeptic(llm).attack("c",[WST])
     assert v.result==REFUTED
 
@@ -338,7 +340,8 @@ def test_locate_span_never_emits_a_wrong_offset_property():
     """Property: any non-null (s,e) from locate_span must re-normalize to the
     quote, over a fuzz of adversarial unicode. Exact-or-null, by construction."""
     import random
-    from killpass.grounding import locate_span, normalize, _normalize_with_map
+
+    from killpass.grounding import _normalize_with_map, locate_span, normalize
     alphabet = list("abcAB 12.,") + ["́","̣","​","﻿","ß","é",
                                       "½","’","—","Ａ","\t","  ","ẞ"]
     rng = random.Random(20260801)
@@ -348,7 +351,9 @@ def test_locate_span_never_emits_a_wrong_offset_property():
         assert _normalize_with_map(src)[0] == normalize(src)   # map integrity
         ns = normalize(src)
         if ns and rng.random() < 0.7 and len(ns) >= 2:
-            a = rng.randint(0, len(ns)-1); b = rng.randint(a+1, len(ns)); nq = ns[a:b]
+            a = rng.randint(0, len(ns)-1)
+            b = rng.randint(a+1, len(ns))
+            nq = ns[a:b]
         else:
             nq = normalize("".join(rng.choice(alphabet) for _ in range(rng.randint(1,5))))
         off = locate_span(src, nq)

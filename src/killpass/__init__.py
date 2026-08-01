@@ -6,10 +6,18 @@ source yet be negated, sarcastic, or a third-party rumor. That residual is
 measured (tests/adversarial) and documented (SECURITY.md), never hidden.
 """
 from ._version import __version__
-
 from .core import (
-    CONFIRMED, REFUTED, INSUFFICIENT, ESCALATE, SCHEMA_VERSION,
-    Skeptic, Verdict, EvidenceSpan, SourceDocument, SourceRef, dual_attack,
+    CONFIRMED,
+    ESCALATE,
+    INSUFFICIENT,
+    REFUTED,
+    SCHEMA_VERSION,
+    EvidenceSpan,
+    Skeptic,
+    SourceDocument,
+    SourceRef,
+    Verdict,
+    dual_attack,
 )
 from .sources import load, load_all
 
