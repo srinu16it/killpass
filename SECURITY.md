@@ -90,7 +90,7 @@ The harness is built to fail closed, never open:
   the boundary rather than degrading silently (a `None` source is skipped and a
   `None` claim becomes empty; those are data conditions, not misuse).
 
-The frozen verdict contract is [SCHEMA.md](SCHEMA.md) (schema v3).
+The frozen verdict contract is [SCHEMA.md](SCHEMA.md) (schema v4; additive fields only).
 
 ## Reporting
 

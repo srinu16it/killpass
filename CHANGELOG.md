@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.2.0 — 2026-08-01
+
+Additive provenance. **Schema bumps to v4** (one optional field; forward-compatible).
+
+- **`run_metadata`.** `Skeptic(run_metadata={...})` echoes a caller-supplied dict
+  (model name, prompt version, run id, ...) verbatim into every verdict's
+  `run_metadata`. killpass never reads or fills it (the `llm` is an opaque
+  callable) and it never touches the gate, exactly like `SourceDocument.id`/`uri`.
+  It is `null` when not supplied.
+- **Trap framing clarified (docs).** The five prompt traps are documented as a
+  finance-flavored, non-gating scaffold from the source research system, not a
+  domain product; killpass ships no domain "profiles" or configurable checklist.
+
+Three other items from the external review's P1 set were considered and
+deliberately **not** built into killpass: `outcome_kind` (derivable from
+`downgrade_reason`, a second encoding), richer `dual_attack` agreement grades
+(a new adjudication axis; belongs in a wrapper), and a caller-configurable trap
+profile (frames a domain). The doctrine is why.
+
 ## 1.1.0 — 2026-08-01
 
 Hardening release (additive; no API or schema change).

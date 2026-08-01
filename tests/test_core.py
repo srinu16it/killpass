@@ -17,7 +17,7 @@ def ok_checks():
 def test_grounded_confirm():
     v = Skeptic(canned({"result":"CONFIRMED","evidence":[{"quote":"increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars","source_index":0}],"rationale":"raise","checks":ok_checks()})).attack("West raised EPS guidance",[WST])
     assert v.result==CONFIRMED and v.survived and v.evidence[0].source_index==0 and v.downgrade_reason is None
-    assert v.schema_version==3
+    assert v.schema_version==4
 
 def test_fabricated_mismatches_cited_source():
     # fabricated quote cites source 0 but is not in it -> provenance failure
@@ -283,9 +283,42 @@ def test_constructor_rejects_bad_limits():
 
 def _sha(s): return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
-def test_schema_version_is_3():
+def test_schema_version_is_4():
     v = Skeptic(canned({"result":"REFUTED","evidence":[{"quote":"up from the previous range of 8.40 to 8.75","source_index":0}],"rationale":"x","checks":ok_checks()})).attack("c",[WST])
-    assert v.schema_version==3
+    assert v.schema_version==4
+
+# --- v1.2.0: run_metadata (echo-only provenance, schema v4) ---
+
+def test_run_metadata_echoed_into_verdict():
+    sk = Skeptic(canned({"result":"INSUFFICIENT","evidence":[],"rationale":"x","checks":ok_checks()}),
+                 run_metadata={"model":"qwen3.5:35b","run_id":"r-42"})
+    v = sk.attack("c",[WST])
+    assert v.run_metadata == {"model":"qwen3.5:35b","run_id":"r-42"}
+
+def test_run_metadata_defaults_none():
+    v = Skeptic(canned({"result":"INSUFFICIENT","evidence":[],"rationale":"x","checks":ok_checks()})).attack("c",[WST])
+    assert v.run_metadata is None
+
+def test_run_metadata_is_copied_not_shared():
+    md = {"model":"m", "tags":["a"]}   # includes a nested mutable
+    sk = Skeptic(canned({"result":"INSUFFICIENT","evidence":[],"rationale":"x","checks":ok_checks()}), run_metadata=md)
+    v = sk.attack("c",[WST])
+    md["model"] = "mutated"
+    md["tags"].append("b")             # nested mutation must not reach the verdict
+    assert v.run_metadata == {"model":"m", "tags":["a"]}   # deep snapshot
+
+def test_run_metadata_never_influences_verdict():
+    # decisive verdict is unchanged whether or not run_metadata is present
+    payload = {"result":"REFUTED","evidence":[{"quote":"up from the previous range of 8.40 to 8.75","source_index":0}],"rationale":"x","checks":ok_checks()}
+    a = Skeptic(canned(payload)).attack("c",[WST])
+    b = Skeptic(canned(payload), run_metadata={"model":"m"}).attack("c",[WST])
+    assert a.result==b.result==REFUTED and a.downgrade_reason==b.downgrade_reason
+
+def test_run_metadata_bad_type_raises():
+    with pytest.raises(TypeError):
+        Skeptic(canned({}), run_metadata=["not","a","dict"])
+    with pytest.raises(TypeError):
+        Skeptic(canned({}), run_metadata={1:"non-string-key"})
 
 def test_offsets_point_to_original_span():
     span="up from the previous range of 8.40 to 8.75"

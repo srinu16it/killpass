@@ -70,6 +70,13 @@ result on them**. A model can mark every trap "no" and still return a grounded
 CONFIRMED. The traps sharpen the skeptic's attention; the only mechanical
 guarantee is the quote gate.
 
+The five traps are a finance-flavored scaffold carried over from the research
+system killpass came from. They are prompt-only and non-gating on purpose. The
+mechanical gate itself is domain-neutral, it checks quote membership, not
+subject matter. killpass does not ship domain "profiles" or a configurable
+checklist; that would frame a domain as a supported job. If you want a different
+checklist, prompt your skeptic yourself or build it as your own tool.
+
 ## What can still fool it?
 By design, a substring engine cannot catch: **negation** ("we deny that
 guidance was raised" contains the words "guidance was raised"), **third-party
@@ -124,7 +131,7 @@ documents and deciding how multi-chunk verdicts compose is your job; a small
 library should not own retrieval.
 
 ## Is it production-ready? Who uses it?
-It is a small, zero-dependency library at v1.1 with 115 tests and a
+It is a small, zero-dependency library at v1.2 with 120 tests and a
 48-case mechanical adversarial pack in CI. The verification *patterns* come from one
 research stack (from a real research system); the library itself
 is early, and there is no multi-customer production claim, if you adopt it,

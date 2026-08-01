@@ -37,4 +37,4 @@ jobs:
       - run: |
           python -m venv /tmp/clean
           /tmp/clean/bin/pip install dist/*.whl
-          /tmp/clean/bin/python -c "import killpass; from killpass import Skeptic, SourceDocument; assert killpass.SCHEMA_VERSION == 3; print('clean-wheel import ok', killpass.__version__)"
+          /tmp/clean/bin/python -c "import killpass; from killpass import Skeptic, SourceDocument; assert killpass.SCHEMA_VERSION == 4; print('clean-wheel import ok', killpass.__version__)"

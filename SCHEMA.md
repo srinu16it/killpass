@@ -1,6 +1,6 @@
-# Verdict schema v3
+# Verdict schema v4
 
-`schema_version = 3`. Fields an integrator may pin:
+`schema_version = 4`. Fields an integrator may pin:
 
 | field | type | notes |
 |---|---|---|
@@ -10,8 +10,14 @@
 | `rationale` | str | one plain paragraph |
 | `checks` | dict | exactly the five trap keys -> `yes`/`no`/`n/a` |
 | `source_manifest` | `list[SourceRef]` | one entry per judged source (v3) |
-| `schema_version` | int | `3` |
+| `run_metadata` | dict or null | caller-supplied provenance, echoed only (v4) |
+| `schema_version` | int | `4` |
 | `killpass_version` | str | package version |
+
+`run_metadata` is an optional dict the caller passes to `Skeptic(run_metadata=...)`
+(model name, prompt version, run id, ...). killpass echoes it verbatim into every
+verdict and never reads or fills it; it has no key vocabulary and no influence on
+the gate. It is `null` when not supplied.
 
 `EvidenceSpan = {quote: str, source_index: int, start_char: int|null,
 end_char: int|null, source_sha256: str|null}`. `start_char`/`end_char` are a
@@ -55,6 +61,13 @@ a content verdict):
 **Frozen mechanical constants:** min quote 12 chars, max 500, near-whole alpha
 0.5 (sources >=500 chars) / 0.9 (shorter), claim-echo = quote is a substring
 of the claim or its token set is a subset of the claim's.
+
+## Migration: v3 -> v4
+
+`schema_version=4` is purely additive. Every field, reason code, and gate
+semantic from v3 is unchanged. The one addition is an optional top-level
+`run_metadata` (a caller-supplied provenance dict, echoed only, `null` when not
+supplied). A consumer pinned to v3 must ignore it, not crash.
 
 ## Migration: v2 -> v3
 

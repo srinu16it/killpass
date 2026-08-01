@@ -7,6 +7,7 @@ engine and are measured, not hidden (tests/adversarial, SECURITY.md).
 """
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 from dataclasses import dataclass, field
@@ -32,12 +33,12 @@ _DECISIVE = {CONFIRMED, REFUTED}
 _RESULTS = {CONFIRMED, REFUTED, INSUFFICIENT}
 ESCALATE = "ESCALATE"
 
-# schema_version 3: adds optional audit fields (evidence offsets, per-source
-# sha256, source manifest) on top of v2. v1/v2 reason codes and gate semantics
-# are unchanged; the new fields default to null/empty when unavailable.
-# Consumers pinning an older version MUST ignore unknown fields, not crash.
-# See SCHEMA.md.
-SCHEMA_VERSION = 3
+# schema_version 4: adds an optional, caller-supplied `run_metadata` echo field
+# on top of v3 (evidence offsets, per-source sha256, source manifest). All gate
+# semantics and reason codes are unchanged; every added field is optional and
+# defaults to null/empty. Consumers pinning an older version MUST ignore unknown
+# fields, not crash. See SCHEMA.md.
+SCHEMA_VERSION = 4
 
 # Operational / bound reasons: the harness could not obtain a judgeable verdict.
 # These are NOT content verdicts; a crash or an oversize input is not "the
@@ -112,6 +113,7 @@ class Verdict:
     killpass_version: str = __version__
     raw: str = ""
     source_manifest: List[SourceRef] = field(default_factory=list)
+    run_metadata: Optional[dict] = None   # caller-supplied provenance, echoed only (v4)
 
     @property
     def survived(self) -> bool:
@@ -193,6 +195,11 @@ class Skeptic:
     rather than let the harness build a megabyte prompt or chew an unbounded
     model response. Over budget returns INPUT_TOO_LARGE (pre-call) or
     RESPONSE_TOO_LARGE (the model's output), never a content verdict.
+
+    run_metadata: an optional dict of caller-supplied provenance (model name,
+    prompt version, run id, ...) echoed verbatim into every verdict's
+    `run_metadata`. killpass never reads it and never fills it (the llm is an
+    opaque callable); it is a pass-through, exactly like SourceDocument.id/uri.
     """
 
     def __init__(self, llm: Callable[[str], str], max_source_chars: Optional[int] = None,
@@ -200,7 +207,8 @@ class Skeptic:
                  max_sources: int = _MAX_SOURCES,
                  max_total_source_chars: int = _MAX_TOTAL_SOURCE_CHARS,
                  max_model_response_chars: int = _MAX_MODEL_RESPONSE_CHARS,
-                 max_evidence_items: int = _MAX_EVIDENCE_ITEMS):
+                 max_evidence_items: int = _MAX_EVIDENCE_ITEMS,
+                 run_metadata: Optional[dict] = None):
         # Fail fast on nonsensical limits (negative, zero, bool, non-int) rather
         # than degrade into strange behavior at attack() time.
         _positive_int("max_claim_chars", max_claim_chars)
@@ -209,6 +217,9 @@ class Skeptic:
         _positive_int("max_model_response_chars", max_model_response_chars)
         _positive_int("max_evidence_items", max_evidence_items)
         _positive_int("max_source_chars", max_source_chars, allow_none=True)
+        if run_metadata is not None:
+            if not isinstance(run_metadata, dict) or not all(isinstance(k, str) for k in run_metadata):
+                raise TypeError("run_metadata must be a dict with string keys")
         self.llm = llm
         self.max_source_chars = max_source_chars
         self.max_claim_chars = max_claim_chars
@@ -216,8 +227,21 @@ class Skeptic:
         self.max_total_source_chars = max_total_source_chars
         self.max_model_response_chars = max_model_response_chars
         self.max_evidence_items = max_evidence_items
+        # Deep snapshot so a later caller mutation (even of a nested value) cannot
+        # reach into an already-issued verdict.
+        self.run_metadata = copy.deepcopy(run_metadata) if run_metadata is not None else None
 
     def attack(self, claim: str, sources: "List[Union[str, SourceDocument, None]]") -> Verdict:
+        """Verify a claim against sources; echoes run_metadata into the verdict.
+
+        A thin wrapper over the judgment so caller provenance is stamped on every
+        return path without threading it through the gate."""
+        v = self._run(claim, sources)
+        if self.run_metadata is not None:
+            v.run_metadata = copy.deepcopy(self.run_metadata)   # each verdict fully independent
+        return v
+
+    def _run(self, claim: str, sources: "List[Union[str, SourceDocument, None]]") -> Verdict:
         # Type-misuse is a programmer error, surfaced as a clear TypeError at the
         # boundary, not an obscure AttributeError from deep inside (and not a
         # silent INSUFFICIENT that would hide the caller's bug). A None claim or
