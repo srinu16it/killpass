@@ -125,7 +125,7 @@ library should not own retrieval.
 ## Is it production-ready? Who uses it?
 It is a small, zero-dependency library at v0.2.x with 22 tests and a
 mechanical adversarial pack in CI. The verification *patterns* come from one
-research stack (public example kills: arin-research-notes); the library itself
+research stack (from a real research system); the library itself
 is early, and there is no multi-customer production claim — if you adopt it,
 you may be among the first. Treat it as a tested building block, not a
 compliance-certified product. For high-stakes decisions use `dual_attack` and

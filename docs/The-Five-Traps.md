@@ -1,8 +1,7 @@
 # The Five Traps
 
 Generic "verify this" prompts miss patterned deceptions. killpass tests
-five by name, learned from real, documented failures in a production
-research system (receipts: [arin-research-notes](https://github.com/srinu16it/arin-research-notes)):
+five by name, learned from real, documented failures in a research system:
 
 1. **Title vs body** — the headline says "Raises," the document says
    "Updates" or "Reaffirms." (Killed a real stock nomination: the release

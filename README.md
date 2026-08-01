@@ -49,15 +49,12 @@ The default is skepticism: when the evidence is unclear, the claim fails.
 This isn't a theory. killpass is extracted from verification patterns used in a real research
 system. One example:
 
-The system nominated four stocks because headlines said "raised guidance."
-Each claim went through the skeptic. **All four died** — one press release
-literally said "Updates," not "Raises"; another buried a forecast *cut*
-inside the same document; a third funded its good news with a new loan the
-headline never mentioned. The skeptic caught what the reader-AI missed,
+In one run, a system nominated four stocks because headlines said "raised
+guidance." Each claim went through the skeptic. **All four died** — one press
+release literally said "Updates," not "Raises"; another buried a forecast
+*cut* inside the same document; a third funded its good news with a new loan
+the headline never mentioned. The skeptic caught what the reader-AI missed,
 four out of four, by reading the actual SEC filings.
-
-The receipts are public: [arin-research-notes](https://github.com/srinu16it/arin-research-notes)
-— every kill is documented with dates and sources.
 
 ## It works on any news, not just finance
 
@@ -144,9 +141,7 @@ the web mid-judgment.
 
 **v0.2.1 — published and hardened.** `pip install killpass`. 22 tests plus an
 adversarial fixture pack in CI; the design was hardened through multiple rounds of adversarial review.
-The verification patterns come from a research system; the public receipts
-are in
-[arin-research-notes](https://github.com/srinu16it/arin-research-notes).
+The verification patterns were extracted from a real research system.
 
 ## Limitations
 
