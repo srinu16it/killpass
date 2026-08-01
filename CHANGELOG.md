@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.0.1 — 2026-08-01
+
+Correctness patch from an external review. No API or schema change: these fixes
+make the gate enforce the contract it already documented. A response that was
+wrongly accepted before now correctly fails.
+
+- **Offset uniqueness is overlapping-aware.** `locate_span` used a non-overlapping
+  count, so a repeated run like `"aaaa..."` with a shorter substring quote looked
+  unique and emitted an offset. It now returns null unless the match is truly the
+  only locus, honoring the exact-or-null guarantee.
+- **Strict evidence types.** A non-string `quote` (e.g. a number) was `str()`-cast
+  and could ground. Quotes must now be strings and `result` must be a string, or
+  the response fails as `SCHEMA` instead of being coerced.
+- **Evidence structure is validated for every result.** A malformed evidence item
+  on an `INSUFFICIENT` response skipped validation and passed as
+  `MODEL_INSUFFICIENT`; it is now a `SCHEMA` failure like any other malformed
+  response.
+- **Constructor limits are validated.** Negative, zero, boolean, or non-integer
+  bounds raise `ValueError` at construction instead of producing strange behavior
+  later.
+- Package maturity classifier corrected to Beta (stable API, early adoption).
+
 ## 1.0.0 — 2026-08-01
 
 Stability release. No behavior change from 0.5.0.

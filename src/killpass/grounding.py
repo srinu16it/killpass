@@ -180,9 +180,14 @@ def locate_span(original: str, norm_quote: str) -> Optional[Tuple[int, int]]:
         norm_text, origins = _normalize_with_map(original)
         if norm_text != normalize(original):      # map integrity guard
             return None
-        if not norm_quote or norm_text.count(norm_quote) != 1:
+        if not norm_quote:
+            return None
+        # Uniqueness must be OVERLAPPING-aware: str.count is non-overlapping, so
+        # "aaa..." with a shorter "aa..." quote would look unique when it is not.
+        first = norm_text.find(norm_quote)
+        if first < 0 or norm_text.find(norm_quote, first + 1) >= 0:
             return None                            # absent or ambiguous locus
-        i = norm_text.index(norm_quote)
+        i = first
         j = i + len(norm_quote)
         if j - 1 >= len(origins):
             return None

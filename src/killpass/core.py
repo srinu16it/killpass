@@ -110,6 +110,15 @@ class Verdict:
         return self.result == CONFIRMED
 
 
+def _positive_int(name: str, value, *, allow_none: bool = False) -> None:
+    """Reject nonsensical limits at construction. bool is an int subclass, so
+    True/False must be excluded explicitly."""
+    if allow_none and value is None:
+        return
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ValueError(f"{name} must be a positive integer, got {value!r}")
+
+
 def _insufficient(reason: str, *, rationale: str = "", raw: str = "", checks=None,
                   manifest=None) -> Verdict:
     return Verdict(INSUFFICIENT, rationale=rationale, downgrade_reason=reason,
@@ -184,6 +193,14 @@ class Skeptic:
                  max_total_source_chars: int = _MAX_TOTAL_SOURCE_CHARS,
                  max_model_response_chars: int = _MAX_MODEL_RESPONSE_CHARS,
                  max_evidence_items: int = _MAX_EVIDENCE_ITEMS):
+        # Fail fast on nonsensical limits (negative, zero, bool, non-int) rather
+        # than degrade into strange behavior at attack() time.
+        _positive_int("max_claim_chars", max_claim_chars)
+        _positive_int("max_sources", max_sources)
+        _positive_int("max_total_source_chars", max_total_source_chars)
+        _positive_int("max_model_response_chars", max_model_response_chars)
+        _positive_int("max_evidence_items", max_evidence_items)
+        _positive_int("max_source_chars", max_source_chars, allow_none=True)
         self.llm = llm
         self.max_source_chars = max_source_chars
         self.max_claim_chars = max_claim_chars
@@ -272,18 +289,32 @@ class Skeptic:
                                  raw=raw, manifest=manifest)
 
         # --- schema gate ---
-        result = str(data.get("result", "")).upper()
+        # Strict types, no coercion: a wrong type is a SCHEMA failure, not a
+        # value to str()-cast (a numeric "quote" must never reach the gate).
+        result_raw = data.get("result")
         checks = data.get("checks")
         ev_raw = data.get("evidence")
-        rationale = str(data.get("rationale", ""))
-        if (result not in _RESULTS
+        rationale = data.get("rationale", "")
+        rationale = rationale if isinstance(rationale, str) else ""   # informational, not gated
+        if (not isinstance(result_raw, str)
+                or result_raw.upper() not in _RESULTS
                 or not isinstance(ev_raw, list)
                 or not isinstance(checks, dict)
                 or set(checks) != set(TRAP_KEYS)
                 or any(str(v).lower() not in {"yes", "no", "n/a"} for v in checks.values())):
             return _insufficient("SCHEMA", rationale="Skeptic response failed the verdict schema.",
                                  raw=raw, checks=checks if isinstance(checks, dict) else {}, manifest=manifest)
+        result = result_raw.upper()
         checks = {k: str(v).lower() for k, v in checks.items()}
+
+        # Validate EVERY evidence item's structure BEFORE branching on result, so
+        # a malformed item cannot ride through on the INSUFFICIENT path. Each item
+        # must be a dict with a string quote and a source_index key. The index's
+        # value/range is checked at grounding time (INVALID_SOURCE_INDEX).
+        for e in ev_raw:
+            if not isinstance(e, dict) or not isinstance(e.get("quote"), str) or "source_index" not in e:
+                return _insufficient("SCHEMA", checks=checks, raw=raw, manifest=manifest,
+                                     rationale="An evidence item is malformed (need a string quote and a source_index).")
 
         if result == INSUFFICIENT:
             return Verdict(INSUFFICIENT, rationale=rationale, checks=checks,
@@ -296,13 +327,6 @@ class Skeptic:
         if len(ev_raw) > self.max_evidence_items:
             return _insufficient(RESPONSE_TOO_LARGE, checks=checks, raw=raw, manifest=manifest,
                                  rationale="Evidence item count exceeds max_evidence_items.")
-        # F1 amend: malformed evidence is a SCHEMA failure, never a silent drop —
-        # a fabricated companion that is not a well-formed item must not vanish
-        # and let a real quote rescue the verdict.
-        for e in ev_raw:
-            if not isinstance(e, dict) or "quote" not in e or "source_index" not in e:
-                return _insufficient("SCHEMA", checks=checks, raw=raw, manifest=manifest,
-                                     rationale="An evidence item is missing quote or source_index.")
         if not ev_raw:
             return _insufficient(Q_UNGROUNDED, checks=checks, raw=raw, manifest=manifest,
                                  rationale="Decisive verdict carried no evidence to ground.")
@@ -314,7 +338,7 @@ class Skeptic:
         spans: List[EvidenceSpan] = []
         failures: List[str] = []
         for e in ev_raw:
-            q = str(e.get("quote", ""))
+            q = e["quote"]   # validated as str in the schema gate above
             idx, reason = check_quote(q, norm_sources, norm_claim, e.get("source_index"))
             if idx is not None:
                 spans.append(_grounded_span(q, idx, contents[idx], manifest[idx].sha256))

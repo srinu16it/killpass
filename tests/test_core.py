@@ -235,6 +235,48 @@ def test_claim_echo_with_trailing_punctuation():
     v = Skeptic(canned({"result":"CONFIRMED","evidence":[{"quote":"Acme raised its FY26 guidance.","source_index":0}],"rationale":"x","checks":ok_checks()})).attack("Acme raised its FY26 guidance",[src])
     assert v.result==INSUFFICIENT and v.downgrade_reason=="CLAIM_ECHO"
 
+# --- v1.0.1: correctness patch (external review) ---
+
+def test_offsets_null_for_overlapping_matches():
+    """str.count is non-overlapping; 'aaa...' with a shorter 'aa...' quote is NOT
+    a unique locus and must yield null offsets, not the first position."""
+    from killpass.grounding import locate_span, normalize
+    src = "a" * 23
+    assert locate_span(src, normalize("a" * 12)) is None
+
+def test_numeric_quote_is_schema_not_grounded():
+    """A non-string quote must fail as SCHEMA, never be str()-coerced into a
+    span that could ground (e.g. a numeric code that appears in the source)."""
+    src = "The report reference code is 123456789012 in the filing appendix here now today."
+    v = Skeptic(canned({"result":"CONFIRMED","evidence":[{"quote":123456789012,"source_index":0}],"rationale":"x","checks":ok_checks()})).attack("c",[src])
+    assert v.result==INSUFFICIENT and v.downgrade_reason=="SCHEMA"
+
+def test_malformed_evidence_on_insufficient_is_schema():
+    """Evidence structure is validated before branching on result: a malformed
+    item cannot ride through on the INSUFFICIENT path as MODEL_INSUFFICIENT."""
+    v = Skeptic(canned({"result":"INSUFFICIENT","evidence":[123, None, {"wrong":"shape"}],"rationale":"x","checks":ok_checks()})).attack("c",[WST])
+    assert v.result==INSUFFICIENT and v.downgrade_reason=="SCHEMA"
+
+def test_wellformed_evidence_on_insufficient_still_model_insufficient():
+    """A well-formed evidence item on INSUFFICIENT is fine (validation does not
+    over-reject); it stays MODEL_INSUFFICIENT."""
+    v = Skeptic(canned({"result":"INSUFFICIENT","evidence":[{"quote":"up from the previous range of 8.40 to 8.75","source_index":0}],"rationale":"x","checks":ok_checks()})).attack("c",[WST])
+    assert v.result==INSUFFICIENT and v.downgrade_reason=="MODEL_INSUFFICIENT"
+
+def test_non_str_result_is_schema():
+    v = Skeptic(canned({"result":123,"evidence":[],"rationale":"x","checks":ok_checks()})).attack("c",[WST])
+    assert v.result==INSUFFICIENT and v.downgrade_reason=="SCHEMA"
+
+def test_constructor_rejects_bad_limits():
+    for bad in ({"max_sources":-1}, {"max_sources":0}, {"max_evidence_items":True},
+                {"max_claim_chars":"5"}, {"max_source_chars":0}, {"max_source_chars":-3}):
+        with pytest.raises(ValueError):
+            Skeptic(canned({}), **bad)
+    # None is allowed only for max_source_chars (the truncation budget)
+    Skeptic(canned({}), max_source_chars=None)
+    with pytest.raises(ValueError):
+        Skeptic(canned({}), max_sources=None)
+
 # --- v0.4: provenance / audit (schema v3) ---
 
 def _sha(s): return hashlib.sha256(s.encode("utf-8")).hexdigest()
