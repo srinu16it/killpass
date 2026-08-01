@@ -58,7 +58,7 @@ Any team whose AI answers questions from documents: legal tech, finance tools, m
 
 ## The honest limit (read this)
 
-killpass checks that a verdict is grounded in a real, verbatim source span. It does not check that the claim is true. A quote can exist in a document yet be negated (*"we deny guidance was raised"*) or come from a third-party rumor. A substring engine cannot catch those, so killpass measures the residual instead of faking a filter. On a small shipped benchmark (a handful of hand-written cases, one local model at temperature 0), negation and rumor did not false-confirm. That is a smoke check, not an accuracy rate. Full model: [SECURITY.md](https://github.com/srinu16it/killpass/blob/main/SECURITY.md). Frozen contract: [SCHEMA.md](https://github.com/srinu16it/killpass/blob/main/SCHEMA.md).
+killpass checks that a verdict is grounded in a real, verbatim source span. It does not check that the claim is true. A quote can exist in a document yet be negated (*"we deny guidance was raised"*) or come from a third-party rumor. A substring engine cannot catch those, so killpass measures the residual instead of faking a filter. The benchmark has two halves: a 48-case mechanical pack (deterministic, canned model output, in CI) that pins every gate reason code, and a live residual harness (`bench/run.py`) you run on your own model that reports false-confirm counts per class (negation, rumor, sarcasm, hypothetical) as `k/n` with a Wilson interval. It reports counts, never an accuracy rate. Full model: [SECURITY.md](https://github.com/srinu16it/killpass/blob/main/SECURITY.md). Frozen contract: [SCHEMA.md](https://github.com/srinu16it/killpass/blob/main/SCHEMA.md).
 
 ## For engineers (30 seconds)
 
@@ -107,7 +107,7 @@ Fetching stays separate from judging on purpose. `load()` runs before the skepti
 
 ## Status
 
-**v0.4.0, published and hardened.** `pip install killpass`. 63 tests plus an adversarial fixture pack in CI. The verdict contract is frozen at schema v3 ([SCHEMA.md](https://github.com/srinu16it/killpass/blob/main/SCHEMA.md)). Multiple rounds of adversarial review hardened the design, before and after each change. The verification patterns were extracted from a real research system.
+**v0.5.0, published and hardened.** `pip install killpass`. 107 tests including a 48-case mechanical adversarial pack in CI. The verdict contract is frozen at schema v3 ([SCHEMA.md](https://github.com/srinu16it/killpass/blob/main/SCHEMA.md)). Multiple rounds of adversarial review hardened the design, before and after each change. The verification patterns were extracted from a real research system.
 
 ## Limitations
 
@@ -123,7 +123,7 @@ Fetching stays separate from judging on purpose. `load()` runs before the skepti
 - It does not fully solve negation (a denial can still contain the words of the claim) or every prompt injection where a source fakes the end of the model's instructions.
 - It does not replace human judgment on high-stakes decisions.
 
-**What you can count on.** The guarantee is mechanical quote grounding for decisive verdicts, not an accuracy percentage. On the small shipped benchmark, the residual classes above did not false-confirm, and real contradictions came through. That is a measurement on a handful of cases, not the product promise. Use `dual_attack` when you want two independent skeptics; disagreement returns `ESCALATE`. Prefer `INSUFFICIENT` over a pretty answer you cannot show the quote for.
+**What you can count on.** The guarantee is mechanical quote grounding for decisive verdicts, not an accuracy percentage. The 48-case mechanical pack pins that guarantee in CI. The live residual harness reports how often each residual class false-confirms on your model as `k/n` with a confidence interval, not a rate. Use `dual_attack` when you want two independent skeptics; disagreement returns `ESCALATE`. Prefer `INSUFFICIENT` over a pretty answer you cannot show the quote for.
 
 ## Questions?
 

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.5.0 — 2026-08-01
+
+Evaluation layer. No library code change: the grounding gate, schema, and public
+API are untouched. This release is about honest measurement.
+
+- **Mechanical adversarial pack expanded to 48 cases**, taxonomy-complete: every
+  downgrade reason at least twice, every result, plus composition (strict-all,
+  severity ordering, decoy JSON) and offset exact-vs-null cases. Deterministic,
+  canned model output, runs in CI. A completeness test fails loudly if a reason
+  code ever lacks a fixture.
+- **Live residual harness rewritten** (`bench/run.py`). It reports, per residual
+  class (negation, rumor, sarcasm, hypothetical), `residual_false_confirm: k/n`
+  with a Wilson 95% interval and the model id, plus true-positive / true-negative
+  smoke counts. It never reports an accuracy percentage or a pooled score.
+- **The semantic-support milestone was cut by design.** Judging whether a
+  grounded span *supports* a claim needs an NLI model, embeddings, or a second
+  LLM, all of which killpass promises not to do. killpass measures the residual;
+  it does not fake the filter. Support-judgment, if wanted, belongs in a separate
+  tool under its own name.
+
 ## 0.4.0 — 2026-08-01
 
 Provenance and audit layer, adversarially reviewed before and after

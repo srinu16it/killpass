@@ -1,42 +1,1452 @@
 [
-  {"id":"fab-1","category":"fabricated-evidence","claim":"Acme raised its FY26 guidance",
-   "sources":["Acme reports Q2 results. Full-year guidance is unchanged."],
-   "model":{"result":"CONFIRMED","evidence":[{"quote":"Acme raised its guidance strongly this quarter","source_index":0}],"rationale":"looks strong","checks":{"title_vs_body":"no","raise_inside_cut":"no","borrowed_good_news":"no","recycled_news":"no","stale_claim":"no"}},
-   "required_result":"INSUFFICIENT","required_downgrade_reason":"SOURCE_INDEX_MISMATCH"},
-
-  {"id":"dump-1","category":"whole-source-dump","claim":"Acme raised its FY26 guidance",
-   "sources":["Acme Corp updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged. EPS revised to a range of 28.36 to 28.80 dollars from 28.05 to 28.55 previously. Second quarter comparable sales growth of 1.5 to 2.0 percent expected."],
-   "model":{"result":"CONFIRMED","evidence":[{"quote":"Acme Corp updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged. EPS revised to a range of 28.36 to 28.80 dollars from 28.05 to 28.55 previously. Second quarter comparable sales growth of 1.5 to 2.0 percent expected.","source_index":0}],"rationale":"the whole thing","checks":{"title_vs_body":"no","raise_inside_cut":"no","borrowed_good_news":"no","recycled_news":"no","stale_claim":"no"}},
-   "required_result":"INSUFFICIENT","required_downgrade_reason":"NEAR_WHOLE_SOURCE"},
-
-  {"id":"echo-1","category":"claim-echo","claim":"Acme raised its FY26 guidance",
-   "sources":["The board met on Tuesday. Acme raised its FY26 guidance was the headline some outlets ran, but the filing shows guidance unchanged and the analyst day is next month for the whole team to review."],
-   "model":{"result":"CONFIRMED","evidence":[{"quote":"Acme raised its FY26 guidance","source_index":0}],"rationale":"it says so","checks":{"title_vs_body":"no","raise_inside_cut":"no","borrowed_good_news":"no","recycled_news":"no","stale_claim":"no"}},
-   "required_result":"INSUFFICIENT","required_downgrade_reason":"CLAIM_ECHO"},
-
-  {"id":"short-1","category":"too-short","claim":"Acme raised its FY26 guidance",
-   "sources":["Acme Corp reported quarterly results with full-year guidance unchanged at prior levels."],
-   "model":{"result":"REFUTED","evidence":[{"quote":"Acme","source_index":0}],"rationale":"x","checks":{"title_vs_body":"yes","raise_inside_cut":"no","borrowed_good_news":"no","recycled_news":"no","stale_claim":"no"}},
-   "required_result":"INSUFFICIENT","required_downgrade_reason":"QUOTE_TOO_SHORT"},
-
-  {"id":"schema-1","category":"schema-abuse","claim":"Acme raised its FY26 guidance",
-   "sources":["Guidance unchanged."],
-   "model":{"result":"CONFIRMED","evidence":"guidance unchanged","rationale":"x","checks":{"title_vs_body":"no"}},
-   "required_result":"INSUFFICIENT","required_downgrade_reason":"SCHEMA"},
-
-  {"id":"neg-1","category":"negation","claim":"Acme raised its FY26 guidance",
-   "sources":["In its statement, Acme said it firmly denies that guidance was raised, and stressed that the full-year outlook remains unchanged from the prior quarter."],
-   "forbidden_results":["CONFIRMED"], "note":"residual: substring 'guidance was raised' exists but is negated. Substring engine cannot kill this; measured, not filtered."},
-
-  {"id":"rumor-1","category":"rumor","claim":"Acme raised its FY26 guidance",
-   "sources":["Several analysts speculated that Acme raised its FY26 guidance, though the company has issued no such statement and its last filing left the outlook unchanged."],
-   "forbidden_results":["CONFIRMED"], "note":"residual: third-party restatement of the claim."},
-
-  {"id":"tp-1","category":"true-positive","claim":"West Pharmaceutical raised its full-year 2026 EPS guidance",
-   "sources":["West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."],
-   "prefer_result":"CONFIRMED"},
-
-  {"id":"tn-1","category":"true-negative","claim":"Ulta Beauty raised its fiscal 2026 guidance",
-   "sources":["Ulta Beauty announces first-quarter results and updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged. Comparable sales growth of 2.5 to 3.5 percent is unchanged."],
-   "prefer_result":"REFUTED"}
+ {
+  "id": "gp-confirm",
+  "category": "gate-pass",
+  "claim": "West raised its FY26 EPS guidance",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "CONFIRMED",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "nonnull"
+ },
+ {
+  "id": "gp-refute",
+  "category": "gate-pass",
+  "claim": "Ulta raised its fiscal 2026 guidance",
+  "sources": [
+   "Ulta Beauty announces first-quarter results and updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged from the prior outlook, and comparable sales growth of 2.5 to 3.5 percent is unchanged."
+  ],
+  "required_result": "REFUTED",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "net sales growth of 6 to 7 percent is unchanged",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "nonnull"
+ },
+ {
+  "id": "gp-multi-quote",
+  "category": "gate-pass",
+  "claim": "West raised its FY26 EPS guidance",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "CONFIRMED",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars",
+     "source_index": 0
+    },
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  }
+ },
+ {
+  "id": "gp-multi-source",
+  "category": "gate-pass",
+  "claim": "West raised its FY26 EPS guidance",
+  "sources": [
+   "A wholly unrelated press release about a different company in a different industry entirely.",
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "CONFIRMED",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 1
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "nonnull"
+ },
+ {
+  "id": "gp-short-source-pass",
+  "category": "gate-pass",
+  "claim": "Acme raised guidance",
+  "sources": [
+   "Acme raised its full-year guidance today."
+  ],
+  "required_result": "CONFIRMED",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "raised its full-year guidance",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  }
+ },
+ {
+  "id": "gp-long-source-pass",
+  "category": "gate-pass",
+  "claim": "guidance was raised to record levels",
+  "sources": [
+   "The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The company is increasing its full-year adjusted EPS guidance range to record levels this year. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. "
+  ],
+  "required_result": "CONFIRMED",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "increasing its full-year adjusted EPS guidance range to record levels this year",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  }
+ },
+ {
+  "id": "unparse-multi-json",
+  "category": "unparseable",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "raw_model": "{\"result\": \"CONFIRMED\", \"evidence\": [{\"quote\": \"up from the previous range of 8.40 to 8.75\", \"source_index\": 0}], \"rationale\": \"x\", \"checks\": {\"title_vs_body\": \"no\", \"raise_inside_cut\": \"no\", \"borrowed_good_news\": \"no\", \"recycled_news\": \"no\", \"stale_claim\": \"no\"}} {\"result\": \"REFUTED\", \"evidence\": [], \"rationale\": \"x\", \"checks\": {\"title_vs_body\": \"no\", \"raise_inside_cut\": \"no\", \"borrowed_good_news\": \"no\", \"recycled_news\": \"no\", \"stale_claim\": \"no\"}}",
+  "required_downgrade_reason": "UNPARSEABLE"
+ },
+ {
+  "id": "unparse-trailing",
+  "category": "unparseable",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "raw_model": "Sure, here it is: {\"result\": \"CONFIRMED\", \"evidence\": [{\"quote\": \"up from the previous range of 8.40 to 8.75\", \"source_index\": 0}], \"rationale\": \"x\", \"checks\": {\"title_vs_body\": \"no\", \"raise_inside_cut\": \"no\", \"borrowed_good_news\": \"no\", \"recycled_news\": \"no\", \"stale_claim\": \"no\"}}",
+  "required_downgrade_reason": "UNPARSEABLE"
+ },
+ {
+  "id": "schema-evidence-string",
+  "category": "schema",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": "a long string not a list",
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "SCHEMA"
+ },
+ {
+  "id": "schema-missing-checks",
+  "category": "schema",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no"
+   }
+  },
+  "required_downgrade_reason": "SCHEMA"
+ },
+ {
+  "id": "truncated-1",
+  "category": "truncated",
+  "claim": "West raised its FY26 EPS guidance",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "TRUNCATED",
+  "skeptic_kwargs": {
+   "max_source_chars": 20
+  }
+ },
+ {
+  "id": "truncated-2",
+  "category": "truncated",
+  "claim": "Ulta raised guidance",
+  "sources": [
+   "Ulta Beauty announces first-quarter results and updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged from the prior outlook, and comparable sales growth of 2.5 to 3.5 percent is unchanged."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "net sales growth of 6 to 7 percent is unchanged",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "TRUNCATED",
+  "skeptic_kwargs": {
+   "max_source_chars": 30
+  }
+ },
+ {
+  "id": "invalid-index-oob",
+  "category": "invalid-source-index",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 5
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "INVALID_SOURCE_INDEX"
+ },
+ {
+  "id": "invalid-index-type",
+  "category": "invalid-source-index",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": "0"
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "INVALID_SOURCE_INDEX"
+ },
+ {
+  "id": "mismatch-fabricated",
+  "category": "source-index-mismatch",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "the company slashed its dividend to zero this year",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "SOURCE_INDEX_MISMATCH"
+ },
+ {
+  "id": "mismatch-grounded-elsewhere",
+  "category": "source-index-mismatch",
+  "claim": "c",
+  "sources": [
+   "A wholly unrelated press release about a different company in a different industry entirely.",
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "SOURCE_INDEX_MISMATCH"
+ },
+ {
+  "id": "too-long-1",
+  "category": "quote-too-long",
+  "claim": "c",
+  "sources": [
+   "The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The company is increasing its full-year adjusted EPS guidance range to record levels this year. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. The analyst day follows next month for the whole team to review the results. "
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail. The board convened on Tuesday morning to review the quarter in detail.",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "QUOTE_TOO_LONG"
+ },
+ {
+  "id": "too-long-2",
+  "category": "quote-too-long",
+  "claim": "c",
+  "sources": [
+   "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "QUOTE_TOO_LONG"
+ },
+ {
+  "id": "near-whole-long",
+  "category": "near-whole",
+  "claim": "c",
+  "sources": [
+   "The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. "
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The board reviewed the quarter and confirmed the full outlook in detail today. The b",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "NEAR_WHOLE_SOURCE"
+ },
+ {
+  "id": "near-whole-short",
+  "category": "near-whole",
+  "claim": "Acme raised guidance",
+  "sources": [
+   "Acme raised its full-year guidance today."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "Acme raised its full-year guidance today.",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "NEAR_WHOLE_SOURCE"
+ },
+ {
+  "id": "echo-substring",
+  "category": "claim-echo",
+  "claim": "Acme raised its FY26 guidance",
+  "sources": [
+   "Acme raised its FY26 guidance was the headline some outlets ran but the filing showed no change."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "Acme raised its FY26 guidance",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "CLAIM_ECHO"
+ },
+ {
+  "id": "echo-token-subset",
+  "category": "claim-echo",
+  "claim": "Acme raised its FY26 guidance sharply",
+  "sources": [
+   "Reports said Acme raised its FY26 guidance in a note but the company confirmed nothing here."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "raised its FY26 guidance",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "CLAIM_ECHO"
+ },
+ {
+  "id": "too-short-1",
+  "category": "quote-too-short",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "raised",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "QUOTE_TOO_SHORT"
+ },
+ {
+  "id": "too-short-2",
+  "category": "quote-too-short",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "guidance up",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "QUOTE_TOO_SHORT"
+ },
+ {
+  "id": "ungrounded-confirm-empty",
+  "category": "ungrounded",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "UNGROUNDED"
+ },
+ {
+  "id": "ungrounded-refute-empty",
+  "category": "ungrounded",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "UNGROUNDED"
+ },
+ {
+  "id": "model-insufficient-1",
+  "category": "model-insufficient",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "INSUFFICIENT",
+   "evidence": [],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "MODEL_INSUFFICIENT"
+ },
+ {
+  "id": "model-insufficient-2",
+  "category": "model-insufficient",
+  "claim": "c",
+  "sources": [
+   "Ulta Beauty announces first-quarter results and updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged from the prior outlook, and comparable sales growth of 2.5 to 3.5 percent is unchanged."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "INSUFFICIENT",
+   "evidence": [
+    {
+     "quote": "net sales growth of 6 to 7 percent is unchanged",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "MODEL_INSUFFICIENT"
+ },
+ {
+  "id": "no-sources",
+  "category": "operational",
+  "claim": "c",
+  "sources": [],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "NO_SOURCES"
+ },
+ {
+  "id": "llm-error-empty",
+  "category": "operational",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "raw_model": "   ",
+  "required_downgrade_reason": "LLM_ERROR"
+ },
+ {
+  "id": "input-too-large",
+  "category": "operational",
+  "claim": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "INPUT_TOO_LARGE",
+  "skeptic_kwargs": {
+   "max_claim_chars": 5
+  }
+ },
+ {
+  "id": "response-too-large",
+  "category": "operational",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 0
+    },
+    {
+     "quote": "increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars",
+     "source_index": 0
+    },
+    {
+     "quote": "net sales growth of 6 to 7 percent is unchanged",
+     "source_index": 1
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "RESPONSE_TOO_LARGE",
+  "skeptic_kwargs": {
+   "max_evidence_items": 2
+  }
+ },
+ {
+  "id": "comp-companion-fail",
+  "category": "composition",
+  "claim": "West raised guidance",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars",
+     "source_index": 0
+    },
+    {
+     "quote": "west announced a ten billion buyback",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "SOURCE_INDEX_MISMATCH"
+ },
+ {
+  "id": "comp-severity-invalid-over-short",
+  "category": "composition",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "raised",
+     "source_index": 0
+    },
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 9
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "INVALID_SOURCE_INDEX"
+ },
+ {
+  "id": "comp-severity-mismatch-over-echo",
+  "category": "composition",
+  "claim": "West raised guidance",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "West raised guidance",
+     "source_index": 0
+    },
+    {
+     "quote": "a fabricated line not present at all",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "SOURCE_INDEX_MISMATCH"
+ },
+ {
+  "id": "comp-decoy-first-json",
+  "category": "composition",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "raw_model": "{\"result\": \"CONFIRMED\", \"evidence\": [], \"rationale\": \"x\", \"checks\": {\"title_vs_body\": \"no\", \"raise_inside_cut\": \"no\", \"borrowed_good_news\": \"no\", \"recycled_news\": \"no\", \"stale_claim\": \"no\"}}\n{\"result\": \"CONFIRMED\", \"evidence\": [{\"quote\": \"up from the previous range of 8.40 to 8.75\", \"source_index\": 0}], \"rationale\": \"x\", \"checks\": {\"title_vs_body\": \"no\", \"raise_inside_cut\": \"no\", \"borrowed_good_news\": \"no\", \"recycled_news\": \"no\", \"stale_claim\": \"no\"}}",
+  "required_downgrade_reason": "UNPARSEABLE"
+ },
+ {
+  "id": "comp-all-good-two-source",
+  "category": "composition",
+  "claim": "West raised guidance",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75.",
+   "Ulta Beauty announces first-quarter results and updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged from the prior outlook, and comparable sales growth of 2.5 to 3.5 percent is unchanged."
+  ],
+  "required_result": "CONFIRMED",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 0
+    },
+    {
+     "quote": "net sales growth of 6 to 7 percent is unchanged",
+     "source_index": 1
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  }
+ },
+ {
+  "id": "comp-good-plus-echo",
+  "category": "composition",
+  "claim": "West raised guidance",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 0
+    },
+    {
+     "quote": "West raised guidance",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "CLAIM_ECHO"
+ },
+ {
+  "id": "comp-good-plus-near-whole",
+  "category": "composition",
+  "claim": "Acme raised guidance",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75.",
+   "Acme raised its full-year guidance today."
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 0
+    },
+    {
+     "quote": "Acme raised its full-year guidance today.",
+     "source_index": 1
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "NEAR_WHOLE_SOURCE"
+ },
+ {
+  "id": "comp-good-plus-too-long",
+  "category": "composition",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75.",
+   "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+  ],
+  "required_result": "INSUFFICIENT",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 0
+    },
+    {
+     "quote": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+     "source_index": 1
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_downgrade_reason": "QUOTE_TOO_LONG"
+ },
+ {
+  "id": "off-unique-nonnull",
+  "category": "offsets",
+  "claim": "c",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "REFUTED",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "nonnull"
+ },
+ {
+  "id": "off-ambiguous-null",
+  "category": "offsets",
+  "claim": "c",
+  "sources": [
+   "repeat this exact phrase and then later repeat this exact phrase once more over here now today"
+  ],
+  "required_result": "REFUTED",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "repeat this exact phrase",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "null"
+ },
+ {
+  "id": "off-ambiguous-null-2",
+  "category": "offsets",
+  "claim": "c",
+  "sources": [
+   "the outlook was cut. separately the outlook was cut in a second unrelated place here as well now"
+  ],
+  "required_result": "REFUTED",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "the outlook was cut",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "null"
+ },
+ {
+  "id": "off-smartquote-case",
+  "category": "offsets",
+  "claim": "c",
+  "sources": [
+   "The board said the outlook was \u201cRAISED to Record Levels\u201d in the filing here now today."
+  ],
+  "required_result": "CONFIRMED",
+  "model": {
+   "result": "CONFIRMED",
+   "evidence": [
+    {
+     "quote": "raised to record levels",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "nonnull"
+ },
+ {
+  "id": "off-combining-mark",
+  "category": "offsets",
+  "claim": "c",
+  "sources": [
+   "prefix cafe\u0301 and more of the exact text here now for the auditor to inspect closely today"
+  ],
+  "required_result": "REFUTED",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "caf\u00e9 and more",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "nonnull"
+ },
+ {
+  "id": "off-whitespace-run",
+  "category": "offsets",
+  "claim": "c",
+  "sources": [
+   "the outlook     was    cut sharply this quarter in the filing here for review now today please"
+  ],
+  "required_result": "REFUTED",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "the outlook was cut sharply",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "nonnull"
+ },
+ {
+  "id": "off-null-never-flips",
+  "category": "offsets",
+  "claim": "c",
+  "sources": [
+   "cut the outlook. later they cut the outlook again in a separate note over here now today please"
+  ],
+  "required_result": "REFUTED",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "cut the outlook",
+     "source_index": 0
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "null"
+ },
+ {
+  "id": "off-multisource",
+  "category": "offsets",
+  "claim": "c",
+  "sources": [
+   "A wholly unrelated press release about a different company in a different industry entirely.",
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "required_result": "REFUTED",
+  "model": {
+   "result": "REFUTED",
+   "evidence": [
+    {
+     "quote": "up from the previous range of 8.40 to 8.75",
+     "source_index": 1
+    }
+   ],
+   "rationale": "x",
+   "checks": {
+    "title_vs_body": "no",
+    "raise_inside_cut": "no",
+    "borrowed_good_news": "no",
+    "recycled_news": "no",
+    "stale_claim": "no"
+   }
+  },
+  "required_offsets": "nonnull"
+ },
+ {
+  "id": "neg-1",
+  "category": "negation",
+  "claim": "Acme raised its FY26 guidance",
+  "sources": [
+   "In its statement, Acme firmly denies that guidance was raised, and stresses the full-year outlook is unchanged."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ],
+  "note": "substring 'guidance was raised' present but negated"
+ },
+ {
+  "id": "neg-2",
+  "category": "negation",
+  "claim": "The company increased its dividend",
+  "sources": [
+   "The company did not increase its dividend this quarter; the board held the dividend flat at prior levels."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "neg-3",
+  "category": "negation",
+  "claim": "Revenue grew year over year",
+  "sources": [
+   "Contrary to expectations, revenue did not grow year over year; it fell three percent from the prior year."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "neg-4",
+  "category": "negation",
+  "claim": "The FDA approved the drug",
+  "sources": [
+   "The FDA has not approved the drug; it issued a complete response letter requesting another trial."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "rumor-1",
+  "category": "rumor",
+  "claim": "Acme raised its FY26 guidance",
+  "sources": [
+   "Several analysts speculated that Acme raised its FY26 guidance, though the company issued no such statement."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "rumor-2",
+  "category": "rumor",
+  "claim": "The company will be acquired",
+  "sources": [
+   "Traders circulated a rumor that the company will be acquired, but no party has confirmed any talks."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "rumor-3",
+  "category": "rumor",
+  "claim": "The plant will close next year",
+  "sources": [
+   "A local blog claims the plant will close next year; the company called the report pure speculation."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "rumor-4",
+  "category": "rumor",
+  "claim": "Earnings beat estimates",
+  "sources": [
+   "Chatter on forums insisted that earnings beat estimates ahead of the print, which has not been released."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "sarc-1",
+  "category": "sarcasm",
+  "claim": "The launch was a success",
+  "sources": [
+   "Oh sure, the launch was a success, if you count a recall in week one and a stock down twenty percent."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "sarc-2",
+  "category": "sarcasm",
+  "claim": "Management has a clear plan",
+  "sources": [
+   "Right, because management has a clear plan, which is why they changed strategy three times this year."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "sarc-3",
+  "category": "sarcasm",
+  "claim": "The balance sheet is rock solid",
+  "sources": [
+   "Sure, the balance sheet is rock solid, if you ignore the covenant breach and the going-concern note."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "sarc-4",
+  "category": "sarcasm",
+  "claim": "Guidance was raised",
+  "sources": [
+   "Wonderful news, guidance was raised, said no one, because the company actually cut the full-year outlook."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "hyp-1",
+  "category": "hypothetical",
+  "claim": "Acme raised its guidance",
+  "sources": [
+   "If Acme raised its guidance next quarter, the multiple might expand; the company has made no such change yet."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "hyp-2",
+  "category": "hypothetical",
+  "claim": "The merger closed",
+  "sources": [
+   "Were the merger to close, synergies could reach one billion; the deal remains subject to regulatory review."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "hyp-3",
+  "category": "hypothetical",
+  "claim": "The company returned to profit",
+  "sources": [
+   "Had the company returned to profit, the shares would have rallied; it reported another quarterly loss instead."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "hyp-4",
+  "category": "hypothetical",
+  "claim": "The buyback was approved",
+  "sources": [
+   "Suppose the buyback was approved: it would lift EPS. The board has not authorized any repurchase to date."
+  ],
+  "forbidden_results": [
+   "CONFIRMED"
+  ]
+ },
+ {
+  "id": "tp-1",
+  "category": "true-positive",
+  "claim": "West Pharmaceutical raised its full-year 2026 EPS guidance",
+  "sources": [
+   "West Pharmaceutical Services reports second-quarter 2026 results. The company is increasing its full-year 2026 adjusted-diluted EPS guidance range to 8.85 to 9.05 dollars, up from the previous range of 8.40 to 8.75."
+  ],
+  "prefer_result": "CONFIRMED"
+ },
+ {
+  "id": "tn-1",
+  "category": "true-negative",
+  "claim": "Ulta Beauty raised its fiscal 2026 guidance",
+  "sources": [
+   "Ulta Beauty announces first-quarter results and updates fiscal 2026 guidance. Full-year net sales growth of 6 to 7 percent is unchanged from the prior outlook, and comparable sales growth of 2.5 to 3.5 percent is unchanged."
+  ],
+  "prefer_result": "REFUTED"
+ }
 ]

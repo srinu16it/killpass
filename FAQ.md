@@ -82,15 +82,16 @@ instruction fence (SECURITY.md); text-extraction damage before the judge
 truncation you don't know about (see long documents). killpass documents and
 measures these rather than pretending to filter them.
 
-## Can I trust the "0% residual" number I saw?
-Treat it as a **smoke measurement, not a rate.** The live residual fixtures
-are a handful of hand-written cases (as of now: one negation, one rumor, one
-true-positive, one true-negative in `tests/adversarial/fixtures.json`), run
-against one local model (`qwen3.5:35b`, temperature 0) via `bench/run.py`. "No
-false confirms on n≈2" is not an accuracy figure. CI enforces the *mechanical*
-fixtures (with canned model output); it does **not** run the live LLM
-benchmark. Re-run `bench/run.py` on your own model, the guarantee you can
-rely on is the mechanical grounding, not any number.
+## Can I trust the residual numbers?
+Treat them as a **measurement, not a rate.** The live residual fixtures are
+hand-written cases (four each of negation, rumor, sarcasm, hypothetical, plus a
+true-positive and true-negative in `tests/adversarial/fixtures.json`), run
+against your model via `bench/run.py`. It reports `residual_false_confirm: k/n`
+per class with a Wilson 95% interval and the model id, never a pooled accuracy
+figure. The n is small and printed; read `k/n`, not a headline. CI enforces the
+48-case *mechanical* pack (canned model output, deterministic) and does **not**
+run the live LLM benchmark. The guarantee you can rely on is the mechanical
+grounding gate, not any number.
 
 ## How is this different from a guardrails library?
 Format/PII/toxicity filters check output shape or safety. killpass only gates
@@ -123,8 +124,8 @@ documents and deciding how multi-chunk verdicts compose is your job; a small
 library should not own retrieval.
 
 ## Is it production-ready? Who uses it?
-It is a small, zero-dependency library at v0.4.x with 63 tests and a
-mechanical adversarial pack in CI. The verification *patterns* come from one
+It is a small, zero-dependency library at v0.5.x with 107 tests and a
+48-case mechanical adversarial pack in CI. The verification *patterns* come from one
 research stack (from a real research system); the library itself
 is early, and there is no multi-customer production claim, if you adopt it,
 you may be among the first. Treat it as a tested building block, not a
